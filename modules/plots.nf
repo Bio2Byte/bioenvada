@@ -40,12 +40,12 @@ process plotPhylogeneticTree {
 
     script:
     """
-
-    if [ $plotTree = 'phylo' ]; then
+    echo $plotTree
+    if [ $plotTree == 'phylo' ]; then
         plotstyle=0
         fi
     
-    if [ $plotTree = 'evo' ]; then
+    if [ $plotTree == 'evo' ]; then
         plotstyle=1
         fi
 
@@ -58,6 +58,9 @@ process plotPhylogeneticTree {
 
 
 process plotEvoVsPhys {
+
+    errorStrategy 'ignore'
+    debug true
     input:
     path etetar
     path branchtar

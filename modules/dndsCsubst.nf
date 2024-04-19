@@ -23,14 +23,16 @@ process runCsubst{
     path multipleSequenceAlignmentNuc
     path rootedTree
     path iqtreefiles
+    val outGroup
 
     output:
-    path "csubst_${multipleSequenceAlignmentNuc}_out.tar.gz" , emit: csubstOut
+    path "csubst_*" , emit: csubstOut
 
     script:
     """
-    echo '1	*.Mycobacterium_tuberculosis' > foreground.txt
-
+   
+    echo "1	$outGroup" > foreground.txt
+    cat foreground.txt
 
     csubst analyze --alignment_file ${multipleSequenceAlignmentNuc}  --rooted_tree_file ${rootedTree} --iqtree_redo no \
         --foreground foreground.txt \
@@ -39,8 +41,6 @@ process runCsubst{
         --max_arity 10 \
         --exhaustive_until 3
     
-    touch csubst_${multipleSequenceAlignmentNuc}_out.tar.gz
-    tar -cvzf csubst_${multipleSequenceAlignmentNuc}_out.tar.gz --exclude={'./.*','csubst_${multipleSequenceAlignmentNuc}_out.tar.gz'} .
     """
 } // python $projectDir/bin/cSubstAnalyzer.py csubst_cb_2.tsv csubst_s.tsv
 //  echo '1	Syn_KORDI_100.*' > foreground.txt
@@ -63,11 +63,10 @@ process runCsubstBranch{
     val branchIds
 
     output:
-    path "csubst_branch_${multipleSequenceAlignmentNuc}_out.tar.gz" , emit: csubstBranchOut
+    path "csubst_*" , emit: csubstBranchOut
 
     script:
     """
-    tar -xvzf ${csubstOutZip}
 
     if [ '$branchIds' = 'all' ]; then
         echo "starting scan"
@@ -87,8 +86,6 @@ process runCsubstBranch{
         csubst site --alignment_file ${multipleSequenceAlignmentNuc}  --rooted_tree_file ${rootedTree} --branch_id ${branchIds} 
     fi
     
-    touch csubst_branch_${multipleSequenceAlignmentNuc}_out.tar.gz
-    tar -cvzhf csubst_branch_${multipleSequenceAlignmentNuc}_out.tar.gz --exclude={'./.*','*.tar.gz','csubst_branch_${multipleSequenceAlignmentNuc}_out.tar.gz'} .
     """
 }
 

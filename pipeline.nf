@@ -287,7 +287,7 @@ workflow {
         findRoot(phylogeneticTree, params.outGroup)
         rootedTree = findRoot.out.rootedTree
 
-        runCsubst(multipleSequenceAlignmentNuc, rootedTree,iqtreeFiles)
+        runCsubst(multipleSequenceAlignmentNuc, rootedTree,iqtreeFiles, params.outGroup)
         csubstOutZip = runCsubst.out.csubstOut
     } else{
         rootedTree = Channel.empty()
