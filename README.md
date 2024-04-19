@@ -5,6 +5,7 @@ We developed a NextFlow (BioEnvAda) pipeline to investigate protein adaptation t
 
 
 
+![Demonstration of the BioEnvAda workflow and results!](BioEnvAda_scheme.png "Demonstration of the BioEnvAda workflow and results")
 ## Quickstart 
 
 The default for all parameters in BioEnvAda is false. If you want to use a predictor, add the flag to the command line to turn it on.
@@ -16,8 +17,8 @@ Usage in commad line:
     -profile standard,withdocker \
     --targetSequences ../input_example.fasta \
     --type 'aa' or 'nuc' \
-    --qc \ 
-    --clustering 0.85\
+    --qc \
+    --clustering 0.85 \
     --relabel \
     --alignSequences \
     --efoldmine \
@@ -37,14 +38,30 @@ Usage in commad line:
 
 Alternatively, adapt launch file run_nf.sh
 
-The launch file also provides an extensive log file with the execution hash (e.g. 29f47dd0-59d1-4ca5-a602-00e10b693b31)to resume past jobs.
-Add -resume to restart the last job or -resume execution_hash to restart any older job.
-This can be used to restart jobs that crashed, but also to create plots with different highlighted proteins or different selected branches for csubst, without the need to recalculate all other steps.
+## Tips, tricks and common issues
+
+ 
+- Cancel a running Nextflow job: **Crtl + C**
+- Pipeline failed to complete:  
+    - to rerun the last job: append **-resume** to the launch command 
+    - to rerun a specific job: check the `*.nflog` files last line to get the unique hash 
+        ```bash
+        nextflow run simsapiper.nf -resume 9ae6b81a-47ba-4a37-a746-cdb3500bee0f 
+        ```
+    - This can also be used to create plots with different highlighted proteins or different selected branches for csubst, without the need to recalculate all other steps
+    - Attention: last state will be permanently overwritten 
+- All intermediate results are unique subdirectory of the directory `work` \
+    Find directory hash for each step in `*.nflog` 
+- Run in the background: launch SIMSApiper in a [screen](https://gist.github.com/jctosta/af918e1618682638aa82) 
+    ```bash
+    screen -S nextflowalign bash -c ./magic_align.sh
+    ```
+    Hit **Crtl + A** and **Crtl +  D** to put it in the background
+    
 
 
 
 
-![Demonstration of the BioEnvAda workflow and results!](BioEnvAda_scheme.png "Demonstration of the BioEnvAda workflow and results")
 
 ## List of parameters
 
