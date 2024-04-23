@@ -1,7 +1,7 @@
 #!/bin/bash
 now=`date +"%s"`
 data=example 
-~/nextflow run pipeline.nf \
+~/nextflow run main.nf \
     -resume \
     -profile standard,withdocker \
     --targetSequences sequences/$data.fasta  \

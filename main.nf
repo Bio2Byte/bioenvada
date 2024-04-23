@@ -8,7 +8,7 @@ log.info """\
 
 Usage:
 
-\$ nextflow run pipeline.nf \\
+\$ nextflow run main.nf \\
     -profile standard,withdocker \\
     --targetSequences ../input_example.fasta \\
     --type 'aa' or 'nuc' \\

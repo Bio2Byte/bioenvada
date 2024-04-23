@@ -13,7 +13,7 @@ The default for all parameters in BioEnvAda is false. If you want to use a predi
 
 Usage in commad line:
 
- nextflow run pipeline.nf \
+ nextflow run main.nf \
     -profile standard,withdocker \
     --targetSequences ../input_example.fasta \
     --type 'aa' or 'nuc' \
