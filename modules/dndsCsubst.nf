@@ -1,6 +1,8 @@
 process findRoot{
     tag "${outGroup}"
 
+    publishDir "$params.outFolder/tree", mode: "copy"
+
     input:
     path phylogeneticTree
     val outGroup
@@ -18,6 +20,8 @@ process runCsubst{
 
     label  'tinysnail'
     tag "${multipleSequenceAlignmentNuc.name}"
+
+    publishDir "$params.outFolder/csubst", mode: "copy"
 
     input:
     path multipleSequenceAlignmentNuc
@@ -53,6 +57,8 @@ process runCsubst{
 
 
 process runCsubstBranch{
+
+    publishDir "$params.outFolder/csubst", mode: "copy"
     label  'tinysnail'
     tag "${multipleSequenceAlignmentNuc.name}"
 
@@ -95,6 +101,8 @@ process runEteEvol{
     label  'tinysnail'
     tag "${multipleSequenceAlignmentNuc.name}"
     conda '/Users/sophie/miniconda3/envs/ete3'
+
+    publishDir "$params.outFolder/dnds", mode: "copy"
 
     input:
     path multipleSequenceAlignmentNuc

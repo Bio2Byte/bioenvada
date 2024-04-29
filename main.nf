@@ -140,6 +140,7 @@ include {
     plotBiophysicalFeaturesOverview as plotBiophysicalFeatures;
     plotPhylogeneticTree;
     plotEvoVsPhys;
+    cladePlots;
 } from "${projectDir}/modules/plots"
 
 include {
@@ -272,6 +273,10 @@ workflow {
         plottedBiophysicalFeaturesInPNG = Channel.empty()
     }
 
+    if (params.cladePlots){
+        cladePlots(phylogeneticTree,predictBiophysicalFeatures.out.predictions,params.b2bfigwidth,params.b2boccupancy)
+    }
+
     if (params.fetchStructures) {
         // Sequences need to be shorter then 400 residues!)
 
@@ -322,35 +327,15 @@ workflow {
 
     plotEvoVsPhys(eteOutZip,csubstBranchOutZip,predictBiophysicalFeatures.out.stats)
 
-    filesToCompress = Channel.empty().mix(
-        sequencesFiltered,
-        clusters,
-        representativeRepresented,
-        multipleSequenceAlignment,
-        multipleSequenceAlignmentNuc,
-        iqtreeFiles,
-        plottedPhylogeneticTree,
-        rootedTree,
-        logo,
-        predictBiophysicalFeatures.out.predictions,
-        predictBiophysicalFeatures.out.stats,
-        plottedBiophysicalFeaturesInPNG,
-        csubstOutZip,
-        csubstBranchOutZip,
-        eteOutZip,
-        structures,
-        sequencesRemoved,
-        plotEvoVsPhys.out
-    ).collect()
+   
 
-    compressDirectory(params.compressedFile, filesToCompress)
 }
 
 workflow.onComplete {
     println "Pipeline completed at               : $workflow.complete"
     println "Time to complete workflow execution : $workflow.duration"
     println "Execution status                    : ${workflow.success ? 'Success' : 'Failed' }"
-    println "Compressed file                     : $params.outDir/${params.compressedFile}.tar.gz"
+    println "Compressed file                     : $params.outFolder/${params.compressedFile}.tar.gz"
 }
 
 workflow.onError {

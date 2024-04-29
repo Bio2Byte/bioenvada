@@ -56,5 +56,5 @@ Thumbs.db
 *.synctex.gz
 
 results/*
-
+results*
 

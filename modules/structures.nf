@@ -1,4 +1,6 @@
 process fetchEsmAtlasStructure {
+
+    publishDir "$params.outFolder/structures", mode: "copy"
     tag "${header}"
     errorStrategy 'ignore'
     debug true
@@ -23,6 +25,8 @@ process fetchEsmAtlasStructure {
 
 
 process aaaToaaSeq {
+
+    publishDir "$params.outFolder/msa", mode: "copy"
     tag "${multipleSequenceAlignment}"
 
     input:

@@ -7,7 +7,7 @@ from sklearn.metrics import silhouette_score
 import matplotlib.pyplot as plt
 
 
-mytree="results/example_filtered_NT_checked.afasta.treefile" #sys.argv[1]
+mytree=sys.argv[1] #"results_testing/example_filtered_NT_checked.afasta.treefile" 
 
 inputname=mytree.split('.')[0]
 
@@ -26,8 +26,20 @@ a=np.array([np.array(xi) for xi in data[0]])
 #distlist is a list of distances [AB,AC,AD,BC,BD,CD]
 distlist=a[np.triu_indices(a.shape[0],k=1)]
 
+Z=linkage(distlist, method='ward', metric='euclidean')
+print('ward')
+print(Z)
+#google if so else had cluster dist > node dist
+
+Z=linkage(distlist, method='single', metric='euclidean')
+print('single')
+print(Z)
+
 #Z=ward(distlist) == Z=linkage(distlist, method='ward', metric='euclidean')
 Z=linkage(distlist, method='median', metric='euclidean')
+print('median')
+print(Z)
+
 
 coeffs={}
 
@@ -56,6 +68,8 @@ ideal_split=list(coeffs.keys())[list(coeffs.values()).index(ideal_split_c)]
 print("Ideal treshold: ", ideal_split)
 
 df['clusters']=fcluster(Z, ideal_split, criterion='distance')
+df['clusters'] = 'clade_'+df['clusters'].astype(str)
+
 #df['clusters_max4_cl']=fcluster(Z, 4, criterion='maxclust')
 
 

@@ -17,7 +17,7 @@ data=example
     --outGroup 'Cya_NS01' \
     --selectedProteins  'AncNode14,Syn_BIOS_U3' \
     --buildLogo \
-    --plotTree 'evo'\
+    --plotTree 'evo' --cladePlots \
     >>  results/$data-$now.nflog
 sessionName=$(sed -n '2s/.*\[\(.*\)\].*/\1/p' results/$data-$now.nflog)
 ~/nextflow log | grep $sessionName >> results/$data-$now.nflog

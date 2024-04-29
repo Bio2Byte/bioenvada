@@ -1,4 +1,6 @@
 process predictBiophysicalFeatures {
+    publishDir "$params.outFolder/msa", mode: "copy"
+
     tag "${sequences.name}"
     errorStrategy 'finish'
     time '10h'
@@ -36,6 +38,8 @@ process predictBiophysicalFeatures {
 
 process buildMultipleSequenceAlignmentNuc {
 
+    publishDir "$params.outFolder/msa", mode: "copy"
+
     label  'bigboy'
     tag "${sequences.name}"
 
@@ -55,6 +59,8 @@ process buildMultipleSequenceAlignmentNuc {
 
 process buildMultipleSequenceAlignmentAA {
 
+    publishDir "$params.outFolder/msa", mode: "copy"
+
     label  'bigboy'
     tag "${sequences.name}"
 
@@ -71,6 +77,8 @@ process buildMultipleSequenceAlignmentAA {
 }
 
 process takeMultipleSequenceAlignment {
+
+    publishDir "$params.outFolder/msa", mode: "copy"
     tag "${sequences.name}"
 
     input:
@@ -89,6 +97,8 @@ process takeMultipleSequenceAlignment {
 }
 
 process takeMultipleSequenceAlignmentNuc {
+
+    publishDir "$params.outFolder/msa", mode: "copy"
     tag "${sequences.name}"
 
     input:
@@ -107,6 +117,8 @@ process takeMultipleSequenceAlignmentNuc {
 }
 
 process buildPhylogeneticTree {
+
+    publishDir "$params.outFolder/tree", mode: "copy"
 
     label  'bigboy'
     tag "${multipleSequenceAlignment.name}"
@@ -130,6 +142,8 @@ process buildPhylogeneticTree {
 
 process buildPhylogeneticTreeEvol {
 
+    publishDir "$params.outFolder/tree", mode: "copy"
+
     label  'bigboy'
     tag "${multipleSequenceAlignmentNuc.name}"
 
@@ -149,6 +163,8 @@ process buildPhylogeneticTreeEvol {
 }
 
 process buildLogo {
+
+    publishDir "$params.outFolder/msa", mode: "copy"
     tag "${multipleSequenceAlignment.name}"
 
     input:

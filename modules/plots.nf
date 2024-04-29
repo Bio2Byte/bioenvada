@@ -1,5 +1,8 @@
 
 process plotBiophysicalFeaturesOverview {
+    
+    publishDir "$params.outFolder/plots/b2b", mode: "copy"
+
     tag "${msa.name}"
     debug true
     errorStrategy "ignore"
@@ -25,6 +28,9 @@ process plotBiophysicalFeaturesOverview {
 
 
 process plotPhylogeneticTree {
+
+
+    publishDir "$params.outFolder/plots/", mode: "copy"
     tag "${tree.name}"
     debug true
 
@@ -59,6 +65,7 @@ process plotPhylogeneticTree {
 
 process plotEvoVsPhys {
 
+    publishDir "$params.outFolder/plots/evo_v_b2b", mode: "copy"
     errorStrategy 'ignore'
     debug true
     input:
@@ -80,4 +87,33 @@ process plotEvoVsPhys {
 
     python3 $projectDir/bin/parseOuts.py $b2bjson
     """
+}
+
+
+process cladePlots {
+
+    publishDir "$params.outFolder/plots/clade_plots", mode: "copy"
+    input:
+    path tree
+    path b2bjson
+    val b2bfigwidth
+    val b2boccupancy
+
+    output:
+    path '*.pdf'
+    path '*dist_thr*.csv', emit: cladeDist
+    path 'b2b*.csv' , emit: b2bPerTool
+
+    script:
+
+    """
+
+    python3 $projectDir/bin/treeToCluster.py $tree
+    python3 $projectDir/bin/newB2BtoolsPlot.py "$b2bjson" "$b2bfigwidth" "$b2boccupancy"
+    
+    """
+
+
+
+
 }
