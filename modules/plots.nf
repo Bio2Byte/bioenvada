@@ -94,22 +94,20 @@ process cladePlots {
 
     publishDir "$params.outFolder/plots/clade_plots", mode: "copy"
     input:
-    path tree
     path b2bjson
     val b2bfigwidth
     val b2boccupancy
+    path cladeTab
 
     output:
     path '*.pdf'
-    path '*dist_thr*.csv', emit: cladeDist
     path 'b2b*.csv' , emit: b2bPerTool
 
     script:
 
     """
 
-    python3 $projectDir/bin/treeToCluster.py $tree
-    python3 $projectDir/bin/newB2BtoolsPlot.py "$b2bjson" "$b2bfigwidth" "$b2boccupancy"
+    python3 $projectDir/bin/newB2BtoolsPlot.py "$b2bjson" "$b2bfigwidth" "$b2boccupancy" $cladeTab
     
     """
 

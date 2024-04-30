@@ -178,3 +178,25 @@ process buildLogo {
     weblogo --sequence-type protein --title "MSA logo" --first-index 0 --size large --format png_print < $multipleSequenceAlignment > ${multipleSequenceAlignment.simpleName}_logo.png
     """
 }
+
+
+process treeToClade {
+
+    publishDir "$params.outFolder/tree", mode: "copy"
+
+    input:
+    path tree
+
+    output:
+
+    path '*.csv' , emit: cladeTab
+    path "*.pdf"
+
+    script:
+    """
+    
+    python3 $projectDir/bin/treeToCluster.py $tree
+    
+    """
+
+}

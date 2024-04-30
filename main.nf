@@ -129,6 +129,7 @@ include {
     buildPhylogeneticTree;
     buildPhylogeneticTreeEvol;
     buildLogo;
+    treeToClade;
 } from "${projectDir}/modules/multipleSequenceAlignment"
 
 include {
@@ -274,7 +275,16 @@ workflow {
     }
 
     if (params.cladePlots){
-        cladePlots(phylogeneticTree,predictBiophysicalFeatures.out.predictions,params.b2bfigwidth,params.b2boccupancy)
+
+        if (params.groupInfo){
+            cladePlots(predictBiophysicalFeatures.out.predictions,params.b2bfigwidth,params.b2boccupancy,params.groupInfo)
+        }
+        else{
+            treeToClade(phylogeneticTree)
+            cladeTab = treeToClade.out.cladeTab
+            cladePlots(predictBiophysicalFeatures.out.predictions,params.b2bfigwidth,params.b2boccupancy,cladeTab)  
+        }
+        
     }
 
     if (params.fetchStructures) {

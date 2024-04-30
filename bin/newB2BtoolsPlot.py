@@ -6,7 +6,7 @@ import sys
 
 
 b2bfile=sys.argv[1]# 'results/b2b_msa_results_example_filtered_AA_checked.json' #
-clade_csv=glob.glob('*dist_thr*.csv')[0]#sys.argv[2]# 'results/example_filtered_NT_checked_dist_thr_1.5.csv' #
+clade_csv=sys.argv[4] #glob.glob('*dist_thr*.csv')[0]#sys.argv[2]# 'results/example_filtered_NT_checked_dist_thr_1.5.csv' #
 
 figwid=sys.argv[2]
 #figwid is figwidth, in cm, optional
