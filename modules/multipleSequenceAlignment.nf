@@ -200,3 +200,21 @@ process treeToClade {
     """
 
 }
+
+process mapMSA {
+    publishDir "$params.outFolder/msa", mode: "copy"
+
+    tag "${sequences.name}"
+
+    input:
+    path sequences
+    path sequencesNuc
+
+    output:
+    path "*.anuc", emit: msaNuc
+
+    script:
+    """
+    macse -prog reportGapsAA2NT -align_AA $sequences -seq $sequencesNuc -out_NT ${sequencesNuc.baseName}.anuc
+    """
+}

@@ -130,6 +130,7 @@ include {
     buildPhylogeneticTreeEvol;
     buildLogo;
     treeToClade;
+    //mapMSA;
 } from "${projectDir}/modules/multipleSequenceAlignment"
 
 include {
@@ -205,6 +206,17 @@ workflow {
             msaAA = sequencesFiltered
             takeMultipleSequenceAlignment(msaAA, params.buildTreeEvo, params.qc)
             multipleSequenceAlignment = takeMultipleSequenceAlignment.out.multipleSequenceAlignment
+
+        }
+        else if (params.type == 'both') {
+            multipleSequenceAlignmentNuc = Channel.empty()
+            msaAA = sequencesFiltered
+            takeMultipleSequenceAlignment(msaAA, params.buildTreeEvo, params.qc)
+            multipleSequenceAlignment = takeMultipleSequenceAlignment.out.multipleSequenceAlignment
+
+            //map aa ali to nucs with macse
+            mapMSA(multipleSequenceAlignment,params.nucToMap)
+            multipleSequenceAlignmentNuc=mapMSA.out.msaNuc
 
         }else {println "Please select the input data type with --type 'nuc'"}
         
