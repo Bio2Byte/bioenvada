@@ -14,13 +14,16 @@ min_occ=sys.argv[3]
 #occupancy filter, percent, optional
 
 outname=b2bfile.split('.')[0]
-clade_df=pd.read_csv(clade_csv,sep='\t',index_col=['index'],usecols=['index','clusters'])
+clade_df=pd.read_csv(clade_csv,sep='\t',usecols=['species','clusters'])
 
 sgroup = clade_df['clusters'].unique()
-colors={}
-for i in range(len(sgroup)):
-    colors[sgroup[i]]=plt.cm.tab10(i)
 
+if 'Cool' in sgroup:
+    colors = {'Cold':'blue','Cool':"green", 'Warm':'orange', "Hot":'red'}
+else:
+    colors={}
+    for i in range(len(sgroup)):
+        colors[sgroup[i]]=plt.cm.tab10(i)
 
 def json_to_df(infile):
     df = pd.read_json(infile, orient='index')
@@ -34,10 +37,29 @@ def json_to_df(infile):
     #print(df)
     return df
 
-def df_to_csv(df):
-
+def df_to_csv(df,clade_df):
     #add clades to df
-    df=df.merge(clade_df,left_index=True, right_index=True)
+    df.reset_index(inplace=True)
+    cat_species=clade_df['species'].tolist()
+    
+    df['cat_species']=df['index'].apply(lambda x: ''.join([part for part in cat_species if part in x ]))
+
+    
+    #qc step
+    qc_df = df.merge(clade_df, left_on='cat_species', right_on='species', how='outer')  
+
+    filtered_df = qc_df[qc_df['index'].notnull()]
+    filtered_df2=filtered_df[~filtered_df['clusters'].notnull()]
+
+    unmatched_cols=filtered_df2['index'].tolist()
+    for elem in unmatched_cols:
+        if 'Syn_' in elem: #or 'Cya_' in elem:
+                print ("Missing temp for strain", elem)
+ 
+    #qc_df[['index','cat_species','clusters','species']].to_csv('testerdf.csv', sep='\t')
+
+    df = df.merge(clade_df, left_on='cat_species', right_on='species', how='inner') 
+
 
     statdfs=[]
     cols = df.columns.values.tolist()
@@ -46,6 +68,10 @@ def df_to_csv(df):
         if 'sequence' in col:
             continue
         if 'clusters'in col:
+            continue
+        if 'species'in col:
+            continue
+        if 'index'in col:
             continue
 
         dfname=outname+'_'+col+'.csv'
@@ -80,7 +106,7 @@ def plots(df, statname, prop,stretch):
         ax1.fill_between(range(0,rows), df[i,'25%'].tolist(), df[i, '75%'].tolist(), alpha=0.15, color=colors[i], label=f'{i} 1st-3rd quartiles')
         #ax1.fill_between(range(0,rows), df[i,'min'].tolist(), df[i,'max'].tolist(), alpha=0.05, color=colors[i], label=f'{i} outliers')
         
-        ax2.bar(range(0,rows), df[i,'count'],  width=1, color=colors[i],alpha=0.3,)
+        ax2.bar(range(0,rows), df[i,'count'],  width=1, color=colors[i],alpha=0.15,)
 
     fig.subplots_adjust(top=0.9, hspace = 0.0001)
     ax1.set_title(f'Prediction of biophysical propensity for {statname} for {str(rows)} residues')
@@ -108,7 +134,7 @@ def plots(df, statname, prop,stretch):
 b2bfile_df=json_to_df(b2bfile)
 b2bfile_df=json_to_df(b2bfile)
 
-stat_csv= df_to_csv(b2bfile_df)
+stat_csv= df_to_csv(b2bfile_df,clade_df)
 #fillis = glob.glob("*_stats.csv")
 
 for tup in stat_csv:

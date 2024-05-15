@@ -16,7 +16,6 @@ process predictBiophysicalFeatures {
     script:
     """
     #!/usr/local/bin/python
-
     import json
     from b2bTools.multipleSeq.Predictor import MineSuiteMSA
     

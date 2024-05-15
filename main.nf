@@ -130,7 +130,7 @@ include {
     buildPhylogeneticTreeEvol;
     buildLogo;
     treeToClade;
-    //mapMSA;
+    mapMSA;
 } from "${projectDir}/modules/multipleSequenceAlignment"
 
 include {
@@ -232,7 +232,7 @@ workflow {
             plotPhylogeneticTree(phylogeneticTree, params.plotTree )
             plottedPhylogeneticTree = plotPhylogeneticTree.out.treePlot
         } else {
-            println "Skipping phylogenetic tree plot from MSA: ${targetSequencesFile}"
+            //println "Skipping phylogenetic tree plot from MSA: ${targetSequencesFile}"
 
             plottedPhylogeneticTree = Channel.empty()
         }
@@ -245,13 +245,13 @@ workflow {
             plotPhylogeneticTree(phylogeneticTree, params.plotTree)
             plottedPhylogeneticTree = plotPhylogeneticTree.out.treePlot
         } else {
-            println "Skipping Phylogenetic tree plot from MSA: ${targetSequencesFile}"
+            //println "Skipping Phylogenetic tree plot from MSA: ${targetSequencesFile}"
 
             plottedPhylogeneticTree = Channel.empty()
         }
     } else {
-        println "Skipping Phylogenetic tree from MSA: ${targetSequencesFile}"
-        println "Skipping Phylogenetic tree plot from MSA: ${targetSequencesFile}"
+        //println "Skipping Phylogenetic tree from MSA: ${targetSequencesFile}"
+        //println "Skipping Phylogenetic tree plot from MSA: ${targetSequencesFile}"
 
         phylogeneticTree = Channel.empty()
         iqtreeFiles = Channel.empty()
@@ -262,7 +262,7 @@ workflow {
         buildLogo(multipleSequenceAlignment)
         logo = buildLogo.out.logo
     } else {
-        println "Skipping Logo from MSA: ${targetSequencesFile}"
+        //println "Skipping Logo from MSA: ${targetSequencesFile}"
 
         logo = Channel.empty()
     }
@@ -282,7 +282,7 @@ workflow {
         plottedBiophysicalFeaturesInPNG = plotBiophysicalFeatures.out.plots
         
     } else {
-        println "Skipping Biophysical features plots from MSA: ${targetSequencesFile}"
+        //println "Skipping Biophysical features plots from MSA: ${targetSequencesFile}"
         plottedBiophysicalFeaturesInPNG = Channel.empty()
     }
 
@@ -305,7 +305,7 @@ workflow {
         fetchEsmAtlasStructure(multipleSequenceAlignment.splitFasta(record: [header: true, seqString: true]).map { record -> [header: record.header, seqString: record.seqString.take(400)] })
         structures = fetchEsmAtlasStructure.out.esmStructures
     } else {
-        sequencesFiltered.view{ "Skipping fetching structures from EsmAtlas for sequences: "+ it}
+        //sequencesFiltered.view{ "Skipping fetching structures from EsmAtlas for sequences: "+ it}
         structures = Channel.empty()
     }
 
@@ -347,7 +347,7 @@ workflow {
         eteOutZip = Channel.empty()
     }
 
-    plotEvoVsPhys(eteOutZip,csubstBranchOutZip,predictBiophysicalFeatures.out.stats)
+    //plotEvoVsPhys(eteOutZip,csubstBranchOutZip,predictBiophysicalFeatures.out.stats)
 
    
 
