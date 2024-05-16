@@ -93,13 +93,15 @@ seqsFiltered = allSequences
 
 seqsQC = seqsFiltered
     .branch{
-        invalid:  it.header =~ /_Pro_/
-        valid: true
+        valid: it.sequence.count('X') / it.sequence.size() < 0.5
+        invalid: it.sequence.count('X') / it.sequence.size() >= 0.5
     }.set { result}
 
 /*
-valid: it.sequence.count('X') / it.sequence.size() < 0.5
-invalid: it.sequence.count('X') / it.sequence.size() >= 0.5
+
+        invalid:  it.header =~ /_Pro_/
+        valid: true
+        
 */
 //result.invalid.last().view{ "INVALID >${it.header}" }
 //result.invalid.view{ "INVALID >${it.header}" }

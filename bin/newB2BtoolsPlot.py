@@ -19,7 +19,7 @@ clade_df=pd.read_csv(clade_csv,sep='\t',usecols=['species','clusters'])
 sgroup = clade_df['clusters'].unique()
 
 if 'Cool' in sgroup:
-    colors = {'Cold':'blue','Cool':"green", 'Warm':'orange', "Hot":'red'}
+    colors = {"Pro":'grey', 'Cold':'blue','Cool':"green", 'Warm':'orange', "Hot":'red'}
 else:
     colors={}
     for i in range(len(sgroup)):
@@ -56,7 +56,7 @@ def df_to_csv(df,clade_df):
         if 'Syn_' in elem: #or 'Cya_' in elem:
                 print ("Missing temp for strain", elem)
  
-    #qc_df[['index','cat_species','clusters','species']].to_csv('testerdf.csv', sep='\t')
+    qc_df[['index','cat_species','clusters','species']].to_csv('testerdf.csv', sep='\t')
 
     df = df.merge(clade_df, left_on='cat_species', right_on='species', how='inner') 
 

@@ -1,5 +1,5 @@
 
-#!/usr/local/bin/python
+
 import json
 import os
 os.environ['MPLCONFIGDIR'] = os.getcwd() + "/configs/"

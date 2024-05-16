@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+
 import pandas as pd
 import sys
 
