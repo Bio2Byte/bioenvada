@@ -14,9 +14,9 @@ min_occ=sys.argv[3]
 #occupancy filter, percent, optional
 
 outname=b2bfile.split('.')[0]
-clade_df=pd.read_csv(clade_csv,sep='\t',usecols=['species','clusters'])
+clade_df=pd.read_csv(clade_csv,sep='\t',usecols=['strain','category'])
 
-sgroup = clade_df['clusters'].unique()
+sgroup = clade_df['category'].unique()
 
 if 'Cool' in sgroup:
     colors = {"Pro":'grey', 'Cold':'blue','Cool':"green", 'Warm':'orange', "Hot":'red'}
@@ -40,25 +40,27 @@ def json_to_df(infile):
 def df_to_csv(df,clade_df):
     #add clades to df
     df.reset_index(inplace=True)
-    cat_species=clade_df['species'].tolist()
+    cat_species=clade_df['strain'].tolist()
     
     df['cat_species']=df['index'].apply(lambda x: ''.join([part for part in cat_species if part in x ]))
 
     
     #qc step
-    qc_df = df.merge(clade_df, left_on='cat_species', right_on='species', how='outer')  
+    qc_df = df.merge(clade_df, left_on='cat_species', right_on='strain', how='outer')  
 
     filtered_df = qc_df[qc_df['index'].notnull()]
-    filtered_df2=filtered_df[~filtered_df['clusters'].notnull()]
+
+    print(filtered_df)
+    filtered_df2=filtered_df[~filtered_df['category'].notnull()]
 
     unmatched_cols=filtered_df2['index'].tolist()
     for elem in unmatched_cols:
         if 'Syn_' in elem: #or 'Cya_' in elem:
                 print ("Missing temp for strain", elem)
  
-    qc_df[['index','cat_species','clusters','species']].to_csv('testerdf.csv', sep='\t')
+    qc_df[['index','cat_species','category','strain']].to_csv('testerdf.csv', sep='\t')
 
-    df = df.merge(clade_df, left_on='cat_species', right_on='species', how='inner') 
+    df = df.merge(clade_df, left_on='cat_species', right_on='strain', how='inner') 
 
 
     statdfs=[]
@@ -67,17 +69,21 @@ def df_to_csv(df,clade_df):
     for col in cols:
         if 'sequence' in col:
             continue
-        if 'clusters'in col:
+        if 'category'in col:
             continue
         if 'species'in col:
             continue
         if 'index'in col:
             continue
-
+        if 'strain'in col:
+            continue
+        if 'execution_time'in col:
+            continue
+            
         dfname=outname+'_'+col+'.csv'
         outdf = df[col].apply(pd.Series)
-        #outdf['clusters'] = outdf.index.str.split('_',n=1,).str[0]
-        outdf['sgroup'] = df['clusters']
+        #outdf['category'] = outdf.index.str.split('_',n=1,).str[0]
+        outdf['sgroup'] = df['category']
         outdf['sequence'] = [''.join(map(str, l)) for l in df['sequence']]
 
         outdf.to_csv(dfname)
@@ -100,7 +106,12 @@ def plots(df, statname, prop,stretch):
     print(statname)
     
     for i in prop:
-        ax1.plot(df[i,'50%'], '-',  markersize=3 ,color=colors[i], label=f'{i} median')
+        try:
+            ax1.plot(df[i,'50%'], '-',  markersize=3 ,color=colors[i], label=f'{i} median')
+        except:
+            print("No member of group ", i, " found!")
+            continue
+       # ax1.plot(df[i,'50%'], '-',  markersize=3 ,color=colors[i], label=f'{i} median')
         #ax1.plot(df[i,'mean'], '-',  markersize=2 ,color=colors[i],alpha=0.3, label=f'{i} mean')
 
         ax1.fill_between(range(0,rows), df[i,'25%'].tolist(), df[i, '75%'].tolist(), alpha=0.15, color=colors[i], label=f'{i} 1st-3rd quartiles')

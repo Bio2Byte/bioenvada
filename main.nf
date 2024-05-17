@@ -269,10 +269,11 @@ workflow {
         logo = Channel.empty()
     }
 
-    predictBiophysicalFeatures(multipleSequenceAlignment)
+    predictBiophysicalFeatures(multipleSequenceAlignment,params.dynamine, params.efoldmine, params.disomine, params.agmata)
     if (params.plotBiophysicalFeatures) {
         plotBiophysicalFeatures(
             multipleSequenceAlignment,
+            params.dynamine,
             params.efoldmine,
             params.disomine,
             params.agmata,
@@ -360,6 +361,7 @@ workflow.onComplete {
     println "Time to complete workflow execution : $workflow.duration"
     println "Execution status                    : ${workflow.success ? 'Success' : 'Failed' }"
     println "Compressed file                     : $params.outFolder/${params.compressedFile}.tar.gz"
+    println "${workflow}.commandLine"
 }
 
 workflow.onError {

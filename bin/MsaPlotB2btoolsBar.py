@@ -25,9 +25,9 @@ selected_proteins   =  ['human','E_coli','2695420338_groEL1_M_tuberculosis']#['S
 tools       = ['efoldmine', 'agmata']
 
 split = 2000
-
-
 '''
+
+
 msa = sys.argv[1]
 predictions = sys.argv[2] 
 stats = sys.argv[5]
@@ -45,6 +45,7 @@ try:
 except:
     tools =[]
 
+print(tools)
 selected_proteins = []
 if sys.argv[4]!= 'false':
     try:

@@ -7,6 +7,11 @@ process predictBiophysicalFeatures {
     input:
     path sequences
 
+    val dynamine
+    val efoldmine
+    val disomine
+    val agmata
+    
     output:
     path 'b2b_msa_results_*.json', emit: predictions
     path 'b2b_msa_stats_*.json', emit: stats
@@ -15,21 +20,7 @@ process predictBiophysicalFeatures {
 
     script:
     """
-    #!/usr/local/bin/python
-    import json
-    from b2bTools.multipleSeq.Predictor import MineSuiteMSA
-    
-    print ('import complete')
-
-    msaSuite = MineSuiteMSA()
-    msaSuite.predictAndMapSeqsFromMSA('$sequences', predTypes = ("dynamine", ${params.efoldmine ? '"eFoldMine",' : ''} ${params.disomine ? '"disoMine",' : ''} ${params.agmata ? '"agmata",' : ''}))
-    print("predictions done")
-
-    predictions_single_seq = msaSuite.allAlignedPredictions
-    json.dump(predictions_single_seq, open('b2b_msa_results_${sequences.baseName}.json', 'w'), indent=2)
-
-    predictions=msaSuite.getDistributions()
-    json.dump(predictions, open('b2b_msa_stats_${sequences.baseName}.json', 'w'), indent=2)
+    python3 $projectDir/bin/runB2Btools.py $sequences $sequences.baseName  "${dynamine ? 'dynamine,' : ' '} ${efoldmine ? 'efoldmine,' : ' '} ${disomine ? 'disomine,' : ' '} ${agmata ? 'agmata,' : ' '}"
     """
 
     
@@ -203,10 +194,10 @@ process treeToClade {
 process mapMSA {
     publishDir "$params.outFolder/msa", mode: "copy"
 
-    tag "${sequences.name}"
+    tag "${alignment.name}"
 
     input:
-    path sequences
+    path alignment
     path sequencesNuc
 
     output:
@@ -214,6 +205,10 @@ process mapMSA {
 
     script:
     """
-    macse -prog reportGapsAA2NT -align_AA $sequences -seq $sequencesNuc -out_NT ${sequencesNuc.baseName}.anuc
+    python3 $projectDir/bin/mapAAtoNUC.py $alignment $sequencesNuc $sequencesNuc.baseName
+
     """
+
+    //macse -prog reportGapsAA2NT -align_AA $sequences -seq $sequencesNuc -out_NT ${sequencesNuc.baseName}.anuc
+    
 }
