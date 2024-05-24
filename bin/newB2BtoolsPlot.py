@@ -19,7 +19,9 @@ clade_df=pd.read_csv(clade_csv,sep='\t',usecols=['strain','category'])
 sgroup = clade_df['category'].unique()
 
 if 'Cool' in sgroup:
-    colors = {"Pro":'grey', 'Cold':'blue','Cool':"green", 'Warm':'orange', "Hot":'red'}
+    colors = {'Cold':'blue','Cool':"green", 'Warm':'orange', "Hot":'red'}
+
+    #colors = {"Pro":'grey', 'Cold':'blue','Cool':"green", 'Warm':'orange', "Hot":'red'}
 else:
     colors={}
     for i in range(len(sgroup)):
@@ -83,12 +85,31 @@ def df_to_csv(df,clade_df):
         dfname=outname+'_'+col+'.csv'
         outdf = df[col].apply(pd.Series)
         #outdf['category'] = outdf.index.str.split('_',n=1,).str[0]
-        outdf['sgroup'] = df['category']
+        outdf['category'] = df['category']
+        outdf['species'] = df['index']
         outdf['sequence'] = [''.join(map(str, l)) for l in df['sequence']]
 
         outdf.to_csv(dfname)
 
-        statdf=outdf.groupby('sgroup').describe().stack()
+        #df for pca
+        pca_df=outdf.drop(columns=['sequence'])
+        pca_df=pca_df.add_prefix('R', axis =1)
+        pca_df.rename(columns={'Rspecies':'species','Rcategory': 'category'}, inplace=True)
+        
+        
+        pca_df.dropna(axis=1, how='any', inplace=True)
+        
+        
+        nrow,ncol=pca_df.shape
+        pca_df.insert(ncol-2,'','')
+        
+        pca_df=pca_df.transpose()
+
+        pcaname=outname+'_'+col+'_pca.csv'
+        pca_df.to_csv(pcaname)
+
+        #get stats df
+        statdf=outdf.groupby('category').describe().stack()
         statname=outname+'_'+col+'_stats.csv'
         statdf.to_csv(statname)
 
@@ -135,7 +156,8 @@ def plots(df, statname, prop,stretch):
 
 
     props=''.join(prop)
-    if len(props) == len(sgroup):
+
+    if len(prop) == len(sgroup):
         plt.savefig(f'{outname}_{statname}_all.pdf')
     else:
         plt.savefig(f'{outname}_{statname}_{props}.pdf')

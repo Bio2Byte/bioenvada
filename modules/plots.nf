@@ -100,7 +100,8 @@ process cladePlots {
     path cladeTab
 
     output:
-    path '*.pdf'
+    path '*.pdf', optional: true 
+    path '*.png', optional: true 
     path 'b2b*.csv' , emit: b2bPerTool
 
     script:
