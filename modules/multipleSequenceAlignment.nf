@@ -122,7 +122,7 @@ process buildPhylogeneticTree {
 
     script:
     """
-    iqtree -s $multipleSequenceAlignment  -nt AUTO -B 10000 -m LG+R10
+    iqtree -s $multipleSequenceAlignment  -nt AUTO -B 10000 
     """
     //FastTree $multipleSequenceAlignment > ${multipleSequenceAlignment}.tree
     //add ultrafast bootstrap -B 10000
