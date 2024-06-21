@@ -22,7 +22,7 @@ process plotBiophysicalFeaturesOverview {
 
     script:
     """
-    python3 $projectDir/bin/MsaPlotB2btoolsBar.py $msa $predictions "${dynamine ? 'dynamine,' : ''} ${efoldmine ? 'efoldmine,' : ''} ${disomine ? 'disomine,' : ''} ${agmata ? 'agmata,' : ''}" $selected_proteins $stats $split
+    python3 $projectDir/bin/MsaPlotB2btoolsBar.py $msa $predictions "${dynamine ? 'dynamine' : ' '} ${efoldmine ? ',efoldmine' : ' '} ${disomine ? ',disomine' : ' '} ${agmata ? ',agmata' : ' '}" $selected_proteins $stats $split
     """
 }
 

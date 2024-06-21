@@ -93,7 +93,7 @@ def df_to_csv(df,clade_df):
 
         #df for pca
         pca_df=outdf.drop(columns=['sequence'])
-        pca_df=pca_df.add_prefix('R', axis =1)
+        pca_df=pca_df.add_prefix('R')#, axis =1)
         pca_df.rename(columns={'Rspecies':'species','Rcategory': 'category'}, inplace=True)
         
         

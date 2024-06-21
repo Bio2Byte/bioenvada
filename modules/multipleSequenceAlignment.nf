@@ -20,7 +20,8 @@ process predictBiophysicalFeatures {
 
     script:
     """
-    python3 $projectDir/bin/runB2Btools.py $sequences $sequences.baseName  "${dynamine ? 'dynamine,' : ' '} ${efoldmine ? 'efoldmine,' : ' '} ${disomine ? 'disomine,' : ' '} ${agmata ? 'agmata,' : ' '}"
+    echo "${dynamine ? 'dynamine' : ' '} ${efoldmine ? ',efoldmine' : ' '} ${disomine ? ',disomine' : ' '} ${agmata ? ',agmata' : ' '}"
+    python3 $projectDir/bin/runB2Btools.py $sequences $sequences.baseName  "${dynamine ? 'dynamine' : ' '} ${efoldmine ? ',efoldmine' : ' '} ${disomine ? ',disomine' : ' '} ${agmata ? ',agmata' : ' '}"
     """
 
     
