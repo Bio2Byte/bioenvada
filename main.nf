@@ -290,12 +290,12 @@ workflow {
     }
 
     if (params.cladePlots){
-        treeToClade(phylogeneticTree)
-        cladeTab = treeToClade.out.cladeTab
         if (params.groupInfo){
             cladePlots(predictBiophysicalFeatures.out.predictions,params.b2bfigwidth,params.b2boccupancy,params.groupInfo)
         }
         else{
+            treeToClade(phylogeneticTree)
+            cladeTab = treeToClade.out.cladeTab
             cladePlots(predictBiophysicalFeatures.out.predictions,params.b2bfigwidth,params.b2boccupancy,cladeTab)  
         }
         

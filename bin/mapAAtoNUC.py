@@ -9,13 +9,14 @@ outname=sys.argv[3]
 aa_df=pd.read_csv(aa_file, header=None)
 aa_df = pd.DataFrame({'label':aa_df[0].iloc[::2].values, 'aseq':aa_df[0].iloc[1::2].values})
 aa_df.label= aa_df.label.str.lstrip(' ')
-
+aa_df.label = aa_df.label.str.replace('[^a-zA-Z0-9]', '_')
+aa_df.label = aa_df.label.str.replace('-', '_')
 
 nuc_df=pd.read_csv(nuc_file, header=None)
 nuc_df = pd.DataFrame({'label':nuc_df[0].iloc[::2].values, 'nseq':nuc_df[0].iloc[1::2].values})
 nuc_df.label= nuc_df.label.str.lstrip(' ')
-
-
+nuc_df.label = nuc_df.label.str.replace('[^a-zA-Z0-9]', '_')
+nuc_df.label = nuc_df.label.str.replace('-', '_')
 
 seqs_df=aa_df.merge(nuc_df)
 
@@ -44,7 +45,9 @@ def tripletify(label,nuc_seq):
     triplets=[nuc_seq[i:i+3] for i in range(0, len(nuc_seq), 3)]
 
     if len(triplets[-1]) != 3:
+        print(triplets)
         raise ValueError("The nucleotide sequence of ",label," can not be mapped to the amino acid alignment, as it is not divisable by 3")
+
     return triplets
 
 
@@ -60,10 +63,13 @@ def map_gaps(triplets,aseq):
         else: #for every aa add next 3 nuc. 
             #check if triplet translation matches nuccode for aa
             codon=triplets[j]
-            try:
-                gencode[codon]==aseq[j]
-            except:
-                raise ValueError('Missmatch between nucleotide triplet and amino acid detected!')
+            if 'N' in codon.upper():
+                print('Undefined codons detected!',codon)
+            else:
+                try:
+                    gencode[codon]==aseq[j]
+                except:
+                    raise ValueError('Missmatch between nucleotide triplet and amino acid detected!')
             mapped+=codon
             j+=1
     
@@ -92,6 +98,7 @@ seqs_df['triplets']=triplets
 seqs_df['mapped_nucs']=mapped_nucs
 
 print(seqs_df)
+
 
 def write_fasta_from_df(df,labelcol,seqcol,outname):
     out_name = outname + '.anuc'
