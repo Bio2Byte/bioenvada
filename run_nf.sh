@@ -1,26 +1,24 @@
 #!/bin/bash
 now=`date +"%s"`
 data=example 
-~/nextflow run main.nf \
-    -resume \
+nextflow run main.nf \
     -profile standard,withdocker \
-    --targetSequences sequences/$data.fasta  \
+    --targetSequences "/home/sheidig/bioenvada/sequences/*.fasta" \
+    --preprocessing "proteome" \
     --alignSequences \
     --buildTreeEvo \
     --efoldmine \
     --disomine \
     --plotBiophysicalFeatures \
-    --fetchStructures \
+    --fetchStructures false \
     --csubst \
     --branchIds '1,5' \
     --eteEvol 'M8' \
     --outGroup 'Cya_NS01' \
     --selectedProteins  'AncNode14,Syn_BIOS_U3' \
     --buildLogo \
-    --plotTree 'evo' --cladePlots ${pwd}/results/testerClades.tsv\
-    >>  results/$data-$now.nflog
-sessionName=$(sed -n '2s/.*\[\(.*\)\].*/\1/p' results/$data-$now.nflog)
-~/nextflow log | grep $sessionName >> results/$data-$now.nflog
+    --plotTree 'evo' \
+    --cladePlots ${pwd}/results/testerClades.tsv
 
 
 #-resume \

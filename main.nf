@@ -1,8 +1,5 @@
 #!/usr/bin/env nextflow
 
-targetSequencesFile     = file(params.targetSequences)
-allSequences            = Channel.fromPath(params.targetSequences)
-params.compressedFile   = "${targetSequencesFile.simpleName}_${params.executionTimestamp}"
 
 log.info """\
 
@@ -80,41 +77,6 @@ Phylo. Tree plot (--plotTree)     : $params.plotTree
 ================================================================================
 """
 
-// Processing input
-
-
-//allSequences.view()
-
-
-seqsFiltered = allSequences
-        .splitFasta( record: [header: true,  sequence: true ])
-        .map { record -> [header: record.header.replaceAll("[^a-zA-Z0-9]", "_"),
-                sequence: record.sequence.replaceAll("\n","").replaceAll("[^ARNDCQEGHILKMFPOSUTWYVarndcqeghilkmfposutwvy-]", "X")] }
-
-seqsQC = seqsFiltered
-    .branch{
-        valid: it.sequence.count('X') / it.sequence.size() < 0.5
-        invalid: it.sequence.count('X') / it.sequence.size() >= 0.5
-    }.set { result}
-
-/*
-
-        invalid:  it.header =~ /_Pro_/
-        valid: true
-        
-*/
-//result.invalid.last().view{ "INVALID >${it.header}" }
-//result.invalid.view{ "INVALID >${it.header}" }
-
-sequencesSanitized = result.valid
-
-sequencesValid = sequencesSanitized.collectFile(name: "${targetSequencesFile.baseName}_filtered.fasta", newLine: true) {
-    item -> '>' + item.header + '\n' + item.sequence + '\n'
-}
-
-sequencesRemoved = result.invalid.collectFile(name: "${targetSequencesFile.baseName}_sequences_ignored.fasta", newLine: true) {
-    item -> '>' + item.header + '\n' + item.sequence + '\n'
-}
 
 // Modules
 include {
@@ -158,6 +120,74 @@ include { compressDirectory } from "${projectDir}/modules/utils"
 
 
 workflow {
+
+    //redo preprocessing
+    // setting: protein - proteome
+    params.compressedFile   = params.outFolder
+
+    if (params.preprocessing == 'protein'){
+        targetSequencesFile     = file(params.targetSequences)
+        allSequences            = Channel.fromPath(params.targetSequences)
+        
+        //allSequences.view()
+        seqsFiltered = allSequences
+                .splitFasta( record: [header: true,  sequence: true ])
+                .map { record -> [header: record.header.replaceAll("[^a-zA-Z0-9]", "_"),
+                        sequence: record.sequence.replaceAll("\n","").replaceAll("[^ARNDCQEGHILKMFPOSUTWYVarndcqeghilkmfposutwvy-]", "X")] }
+
+        seqsQC = seqsFiltered
+            .branch{
+                valid: it.sequence.count('X') / it.sequence.size() < 0.5
+                invalid: it.sequence.count('X') / it.sequence.size() >= 0.5
+            }.set { result}
+        /*
+                invalid:  it.header =~ /_Pro_/
+                valid: true
+        result.invalid.last().view{ "INVALID >${it.header}" }
+        result.invalid.view{ "INVALID >${it.header}" }
+        */
+        sequencesSanitized = result.valid
+        sequencesValid = sequencesSanitized.collectFile(name: "${targetSequencesFile.baseName}_filtered.fasta", newLine: true) {
+            item -> '>' + item.header + '\n' + item.sequence + '\n'
+        }
+        sequencesRemoved = result.invalid.collectFile(name: "${targetSequencesFile.baseName}_sequences_ignored.fasta", newLine: true) {
+            item -> '>' + item.header + '\n' + item.sequence + '\n'
+        }
+    }else if (params.preprocessing == 'proteome'){
+       allSequences            = Channel.fromPath(params.targetSequences) //should be folder here!
+        
+        //allSequences.view()
+        seqsFiltered = allSequences
+                .splitFasta( record: [header: true,  sequence: true ])
+                .map { record -> [header: record.header.replaceAll("[^a-zA-Z0-9]", "_"),
+                        sequence: record.sequence.replaceAll("\n","").replaceAll("[^ARNDCQEGHILKMFPOSUTWYVarndcqeghilkmfposutwvy-]", "X"), orthologID: record.header[0..10] ]} //edit here location of orthologID
+
+        seqsQC = seqsFiltered
+            .branch{
+                valid: it.sequence.count('X') / it.sequence.size() < 0.5
+                invalid: it.sequence.count('X') / it.sequence.size() >= 0.5
+            }.set { result}
+        /*
+                invalid:  it.header =~ /_Pro_/
+                valid: true
+        result.invalid.last().view{ "INVALID >${it.header}" }
+        result.invalid.view{ "INVALID >${it.header}" }
+        */
+        sequencesSanitized = result.valid
+        sequencesValid = sequencesSanitized.collectFile( newLine: true) {
+                    item -> [ "${item.orthologID}_filtered.fasta", '>' + item.header + '\n' + item.sequence]
+        }
+        sequencesValid.view()
+        sequencesRemoved = result.invalid.collectFile(newLine: true) {
+                    item -> [ "${item.orthologID}_ignored.fasta", '>' + item.header + '\n' + item.sequence]
+        }
+
+    }
+
+
+
+
+
 
     if (params.clustering){
         cdHitClustering(sequencesValid, params.clustering)
