@@ -110,15 +110,22 @@ process runEteEvol{
     each eteEvol 
 
     output:
-    path "ete_${multipleSequenceAlignmentNuc}_*_out.tar.gz" , emit: eteOut
+    //path "ete_${multipleSequenceAlignmentNuc}_*_out.tar.gz" , emit: eteOut
+    path "ete_out/*", emit: eteOut
 
     script:
 
     """
+
+    ete3 evol -t $rootedTree --alg $multipleSequenceAlignmentNuc --models M7 M8  --leaves --tests M7 M8 -o ete_out/  --cpu 10 -i ete_out/mypic.png &| tee etelog.log
+
     python $projectDir/bin/EteEvol.py ${multipleSequenceAlignmentNuc.name} $rootedTree $multipleSequenceAlignmentNuc $eteEvol
     
-    tar -cvzhf ete_${multipleSequenceAlignmentNuc}_${eteEvol}_out.tar.gz pamlwd/ plots/
     """
+    //python $projectDir/bin/EteEvol.py ${multipleSequenceAlignmentNuc.name} $rootedTree $multipleSequenceAlignmentNuc $eteEvol
+    //ete3 evol -t $rootedTree --alg $multipleSequenceAlignmentNuc --models  b_free b_neut --leaves --tests b_free,b_neut -o ete_out/  --cpu 10
+      //tar -cvzhf ete_${multipleSequenceAlignmentNuc}_${eteEvol}_out.tar.gz pamlwd/ plots/
+  
 
 
 

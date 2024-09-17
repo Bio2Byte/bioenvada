@@ -1,11 +1,11 @@
 
 import os
 import sys
-from ete3 import EvolTree #, Tree, TreeStyle, TextFace
+from ete4 import EvolTree, Tree #TreeStyle, TextFace
 from ete3.treeview.layouts import evol_clean_layout
 
-os.mkdir("pamlwd")
-os.mkdir("plots")
+#os.mkdir("pamlwd")
+#os.mkdir("plots")
 
 name = sys.argv[1]
 tree_file_path = sys.argv[2]
@@ -16,19 +16,7 @@ models=sys.argv[4]
 
 evol_models = models.split(',')
 
-def mylayout(node):
-        if node.is_leaf():
-                node.img_style["size"] = 8
-                node.img_style["shape"] = "circle"
-
-
 def tree_plot(tree, model):
-        #ts = TreeStyle()
-
-        # ts.scale = 100
-        # ts.title.add_face(TextFace(name, fsize=20), column=0)
-        # ts.layout_fn = mylayout
-
         modname = model.replace(".", "_")
         hist=model.split(".",1)
 
@@ -57,9 +45,6 @@ def dnds_ete3(tree_file_path, alignment_file_path, mod):
         tree.run_model(mod)
         print("model " +mod+ " done")
 
-
-        my_first_fb_model = tree.get_evol_model(mod)
-        print (my_first_fb_model)
         #wdir=output_directory+'/'+mod+'/out'
         #tree.link_to_evol_model(wdir,evmodel)
 
