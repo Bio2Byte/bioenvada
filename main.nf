@@ -160,7 +160,7 @@ workflow {
         seqsFiltered = allSequences
                 .splitFasta( record: [header: true,  sequence: true ])
                 .map { record -> [header: record.header.replaceAll("[^a-zA-Z0-9]", "_"),
-                        sequence: record.sequence.replaceAll("\n","").replaceAll("[^ARNDCQEGHILKMFPOSUTWYVarndcqeghilkmfposutwvy-]", "X"), orthologID: record.header[0..10] ]} //edit here location of orthologID
+                        sequence: record.sequence.replaceAll("\n","").replaceAll("[^ARNDCQEGHILKMFPOSUTWYVarndcqeghilkmfposutwvy-]", "X"), orthologID: record.header[params.orthologIDLen] ]} //or record.header[0..params.orthologIDLen] 
 
         seqsQC = seqsFiltered
             .branch{
