@@ -1,4 +1,4 @@
-from ete4 import Tree,NodeStyle,TreeStyle
+from ete4 import Tree,NodeStyle#,TreeStyle #ImportError: cannot import name 'TreeStyle' from 'ete4' (/home/sheidig/miniconda3/envs/bioenvada_base/lib/python3.12/site-packages/ete4/__init__.py). 
 import sys
 import numpy as np
 import pandas as pd
@@ -49,7 +49,7 @@ dfmin=round(df.mask(df==0).min(numeric_only=True).min()*100)
 
 stepsize=3
 print('Testing distance tresholds ',dfmin/100, ' to ',dfmax/100 )
-for i in range(dfmin,dfmax,stepsize):#range(dfmin,dfmax,20):
+for i in range(dfmin+1,dfmax,stepsize):#range(dfmin,dfmax,20): ##dfmin: ValueError: Number of labels is 8. Valid values are 2 to n_samples - 1 (inclusive)-->dfmin+1
     i=i/100
 
     df['clusters']=fcluster(Z, i, criterion='distance')
@@ -96,8 +96,11 @@ df['clusters_globalMax'] = 'clade_'+df['clusters_globalMax'].astype(str)
 df['clusters_4clades']=fcluster(Z, clust4hres, criterion='distance')
 df['clusters_4clades'] = 'clade_'+df['clusters_4clades'].astype(str)
 
-df['clusters_localMax']=fcluster(Z, localmax_split, criterion='distance')
-df['clusters_localMax'] = 'clade_'+df['clusters_localMax'].astype(str)
+try:
+    df['clusters_localMax']=fcluster(Z, localmax_split, criterion='distance')
+    df['clusters_localMax'] = 'clade_'+df['clusters_localMax'].astype(str)
+except:
+    print("No local maxima found")
 
 #df['clusters_max4_cl']=fcluster(Z, 4, criterion='maxclust')
 
@@ -114,7 +117,7 @@ plt.savefig(inputname+"_dist_thres.pdf")
 
 
 
-
+"""
 clusteroptions=['clusters_4clades','clusters_localMax','clusters_globalMax']
 
 
@@ -160,4 +163,4 @@ for option in clusteroptions:
     ts.mode = "c"
     nt.show(tree_style=ts)
 
-
+"""

@@ -24,18 +24,15 @@ process runCsubst{
     publishDir "$params.outFolder/csubst", mode: "copy"
 
     input:
-    path multipleSequenceAlignmentNuc
-    path rootedTree
-    path iqtreefiles
-    val outGroup
+    tuple val(id), path (multipleSequenceAlignmentNuc), path (rootedTree), path (iqtreefiles)
 
     output:
     path "csubst_*" , emit: csubstOut
 
     script:
     """
-   
-    echo "1	$outGroup" > foreground.txt
+    outgroup=${params.outGroup}
+    echo "1	\$outGroup" > foreground.txt
     cat foreground.txt
 
     csubst analyze --alignment_file ${multipleSequenceAlignmentNuc}  --rooted_tree_file ${rootedTree} --iqtree_redo no \

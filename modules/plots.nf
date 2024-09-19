@@ -98,6 +98,7 @@ process cladePlots {
     val b2bfigwidth
     val b2boccupancy
     path cladeTab
+    path envInfoFile
 
     output:
     path '*.pdf', optional: true 
@@ -107,8 +108,7 @@ process cladePlots {
     script:
 
     """
-
-    python3 $projectDir/bin/newB2BtoolsPlot.py "$b2bjson" "$b2bfigwidth" "$b2boccupancy" $cladeTab
+    python3 $projectDir/bin/newB2BtoolsPlot.py "$b2bjson" "$b2bfigwidth" "$b2boccupancy" $cladeTab $envInfoFile
     
     """
 

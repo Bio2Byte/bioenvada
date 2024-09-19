@@ -7,6 +7,7 @@ import sys
 
 b2bfile=sys.argv[1]# 'results/b2b_msa_results_example_filtered_AA_checked.json' #
 clade_csv=sys.argv[4] #glob.glob('*dist_thr*.csv')[0]#sys.argv[2]# 'results/example_filtered_NT_checked_dist_thr_1.5.csv' #
+env_info=sys.argv[5]
 
 figwid=sys.argv[2]
 #figwid is figwidth, in cm, optional
@@ -14,7 +15,15 @@ min_occ=sys.argv[3]
 #occupancy filter, percent, optional
 
 outname=b2bfile.split('.')[0]
-clade_df=pd.read_csv(clade_csv,sep='\t',usecols=['strain','category'])
+
+
+env_info=pd.read_csv(env_info,sep='\t')
+
+try:
+    clade_df=pd.read_csv(clade_csv,sep='\t',usecols=['strain','category'])
+except:
+    clade_df=pd.read_csv(clade_csv,sep='\t',usecols=['index','clusters_globalMax']) ##this is not supposed to be hardcoded !
+    clade_df.rename(columns={"index": "strain", "clusters_globalMax": "category"}, inplace=True)
 
 sgroup = clade_df['category'].unique()
 
@@ -38,6 +47,13 @@ def json_to_df(infile):
     df['sequence'] = dfseq
     #print(df)
     return df
+
+# Step 1: Create a function that matches strains from df2 to df1
+def find_strain_in_index(index_value, strain_list):
+    for strain in strain_list:
+        if re.search(strain, index_value):
+            return strain
+    return None
 
 def df_to_csv(df,clade_df):
     #add clades to df
@@ -63,6 +79,15 @@ def df_to_csv(df,clade_df):
     qc_df[['index','cat_species','category','strain']].to_csv('testerdf.csv', sep='\t')
 
     df = df.merge(clade_df, left_on='cat_species', right_on='strain', how='inner') 
+
+
+    #add evironmental info, this has to be partial match!
+    # Step 2: Apply the function to df1['index'] to find the corresponding strain
+    strain_list = env_info_df['strain'].tolist()
+    df['short_strain'] = df['index'].apply(lambda x: find_strain_in_index(x, strain_list))
+
+    # Step 3: Merge df1 and df2 based on the 'strain' column
+    result = pd.merge(df, env_info_df,right_on='short_strain', left_on='strain', how='left')
 
 
     statdfs=[]
@@ -93,6 +118,7 @@ def df_to_csv(df,clade_df):
 
         #df for pca
         pca_df=outdf.drop(columns=['sequence'])
+        print(pca_df)
         pca_df=pca_df.add_prefix('R')#, axis =1)
         pca_df.rename(columns={'Rspecies':'species','Rcategory': 'category'}, inplace=True)
         

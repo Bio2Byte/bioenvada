@@ -185,10 +185,6 @@ workflow {
     }
 
 
-
-
-
-
     if (params.clustering){
         cdHitClustering(sequencesValid, params.clustering)
         clusters =  cdHitClustering.out.clusters
@@ -319,14 +315,16 @@ workflow {
         plottedBiophysicalFeaturesInPNG = Channel.empty()
     }
 
-    if (params.cladePlots){
+//this step needs matching of b2btools out and tree
+    if (params.cladePlots){ 
         if (params.groupInfo){
-            cladePlots(predictBiophysicalFeatures.out.predictions,params.b2bfigwidth,params.b2boccupancy,params.groupInfo)
+            cladePlots(predictBiophysicalFeatures.out.predictions,params.b2bfigwidth,params.b2boccupancy,params.groupInfo,params.envInfoFile)
         }
         else{
             treeToClade(phylogeneticTree)
             cladeTab = treeToClade.out.cladeTab
-            cladePlots(predictBiophysicalFeatures.out.predictions,params.b2bfigwidth,params.b2boccupancy,cladeTab)  
+
+            cladePlots(predictBiophysicalFeatures.out.predictions,params.b2bfigwidth,params.b2boccupancy,cladeTab,params.envInfoFile)  
         }
         
     }
@@ -341,12 +339,43 @@ workflow {
         structures = Channel.empty()
     }
 
+
     if (params.csubst) {
 
         findRoot(phylogeneticTree, params.outGroup)
         rootedTree = findRoot.out.rootedTree
 
-        runCsubst(multipleSequenceAlignmentNuc, rootedTree,iqtreeFiles, params.outGroup)
+
+
+//this step needs matching of msa and tree
+//this step needs matching of msa and tree
+//this step needs matching of msa and tree
+//this step needs matching of msa and tree
+//this step needs matching of msa and tree
+//this step needs matching of msa and tree
+//this step needs matching of msa and tree
+        mapAli = multipleSequenceAlignmentNuc.map(it -> tuple(it.baseName[params.orthologIDLen], it))
+        mapTree = rootedTree.map(it -> tuple(it.baseName[params.orthologIDLen] , it))
+
+        mapAli.join(mapTree, remainder:true)
+            .branch {
+                aliNotFound:        it[1] == null
+                treeNotFound:       it[2] == null
+                mapped:         true
+            }.set{matchAliTree}
+        
+        mapIqtreeFiles =iqtreeFiles.map(it -> tuple(it[0].baseName[params.orthologIDLen] ,it))
+
+        matchAliTree.mapped.join(mapIqtreeFiles, remainder:true)
+            .branch {
+                    aliNotFound:        it[1] == null
+                    treeNotFound:       it[2] == null
+                    mapped:         true 
+                }.set{matchAliTreeIq}
+        matchAliTreeIq.mapped.view()
+
+        matchAliTreeIq.mapped.flatMap() | runCsubst
+        //runCsubst(multipleSequenceAlignmentNuc, rootedTree,iqtreeFiles, params.outGroup)
         csubstOutZip = runCsubst.out.csubstOut
     } else{
         rootedTree = Channel.empty()
@@ -359,17 +388,40 @@ workflow {
     } else{
         csubstBranchOutZip = Channel.empty()
     }
+    
+
 
     if (params.eteEvol) {
         if (params.csubst == false){
             findRoot(phylogeneticTree, params.outGroup )
             rootedTree = findRoot.out.rootedTree
-        }
 
+//this step needs matching of msa and tree
+//this step needs matching of msa and tree
+//this step needs matching of msa and tree
+//this step needs matching of msa and tree
+//this step needs matching of msa and tree
+            mapTree = rootedTree.map(it -> tuple(it.baseName[params.orthologIDLen] , it.name))
+            mapAli.join(mapTree, remainder:true)
+                .branch {
+                    aliNotFound:        it[1] == null
+                    treeNotFound:       it[2] == null
+                    modelFound:         true //it[1] != null || it[2] !=null
+                }.set{matchAliTree}
+            
+            matchAliTree.modelFound.view()
+
+        }
 
         modelList = params.eteEvol?.split(',') as List
         modelChannel = Channel.fromList(modelList)
 
+
+//this step needs matching of msa and tree
+//this step needs matching of msa and tree
+//this step needs matching of msa and tree
+//this step needs matching of msa and tree
+//this step needs matching of msa and tree
 
         runEteEvol(multipleSequenceAlignmentNuc, rootedTree, modelChannel)
         eteOutZip = runEteEvol.out.eteOut.toList()
@@ -379,6 +431,7 @@ workflow {
         eteOutZip = Channel.empty()
     }
 
+//this step needs matching of msa and ete/csubst out
     //plotEvoVsPhys(eteOutZip,csubstBranchOutZip,predictBiophysicalFeatures.out.stats)
 
    
