@@ -315,16 +315,30 @@ workflow {
         plottedBiophysicalFeaturesInPNG = Channel.empty()
     }
 
-//this step needs matching of b2btools out and tree
     if (params.cladePlots){ 
         if (params.groupInfo){
-            cladePlots(predictBiophysicalFeatures.out.predictions,params.b2bfigwidth,params.b2boccupancy,params.groupInfo,params.envInfoFile)
+            //cladePlots(predictBiophysicalFeatures.out.predictions,params.b2bfigwidth,params.b2boccupancy,params.groupInfo,params.envInfoFile)
+            //this will also need to take tuple import??
         }
         else{
+//this step needs matching of b2btools out and cladeT
             treeToClade(phylogeneticTree)
             cladeTab = treeToClade.out.cladeTab
 
-            cladePlots(predictBiophysicalFeatures.out.predictions,params.b2bfigwidth,params.b2boccupancy,cladeTab,params.envInfoFile)  
+
+            mapCladeTab = cladeTab.map(it -> tuple(it.baseName[params.orthologIDLen] , it))
+            mapB2Bjson = predictBiophysicalFeatures.out.predictions.map(it -> tuple(it.baseName[params.orthologIDLen] , it))
+
+            mapB2Bjson.join(mapCladeTab, remainder:true)
+                .branch {
+                    cladeNotFound:        it[1] == null
+                    b2bNotFound:       it[2] == null
+                    mapped:         true //it[1] != null || it[2] !=null
+                }.set{matchCladesB2B}
+
+            matchCladesB2B.mapped.flatMap().view()
+            matchCladesB2B.mapped.combine(Channel.fromPath(params.envInfoFile))| cladePlots
+            //cladePlots(predictBiophysicalFeatures.out.predictions,params.b2bfigwidth,params.b2boccupancy,cladeTab,params.envInfoFile)  
         }
         
     }

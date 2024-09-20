@@ -93,23 +93,19 @@ process plotEvoVsPhys {
 process cladePlots {
 
     publishDir "$params.outFolder/plots/clade_plots", mode: "copy"
+    
     input:
-    path b2bjson
-    val b2bfigwidth
-    val b2boccupancy
-    path cladeTab
-    path envInfoFile
+    tuple val(oid), path(b2bjson), path(cladeTab), path(envInfoFile)
 
     output:
     path '*.pdf', optional: true 
     path '*.png', optional: true 
-    path 'b2b*.csv' , emit: b2bPerTool
+    path '*.tsv' , emit: b2bPerTool
 
     script:
 
     """
-    python3 $projectDir/bin/newB2BtoolsPlot.py "$b2bjson" "$b2bfigwidth" "$b2boccupancy" $cladeTab $envInfoFile
-    
+    python3 $projectDir/bin/newB2BtoolsPlot.py "$b2bjson" "${params.b2bfigwidth}" "${params.b2boccupancy}" $cladeTab $envInfoFile
     """
 
 

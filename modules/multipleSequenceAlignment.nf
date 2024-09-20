@@ -13,10 +13,8 @@ process predictBiophysicalFeatures {
     val agmata
     
     output:
-    path 'b2b_msa_results_*.json', emit: predictions
-    path 'b2b_msa_stats_*.json', emit: stats
-
-    // Dynamine runs always; psp has no msa function
+    path '*b2b.json', emit: predictions
+    path '*stats.json', emit: stats
 
     script:
     """
@@ -174,6 +172,7 @@ process buildLogo {
 process treeToClade {
 
     publishDir "$params.outFolder/tree", mode: "copy"
+    tag "${tree.baseName}"
 
     input:
     path tree

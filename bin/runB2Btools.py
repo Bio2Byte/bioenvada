@@ -16,7 +16,7 @@ msaSuite.predictAndMapSeqsFromMSA(sequences, predTypes=predtypes)
 print("predictions done")
 
 predictions_single_seq = msaSuite.allAlignedPredictions
-json.dump(predictions_single_seq, open('b2b_msa_results_'+sequences_name+'.json', 'w'), indent=2)
+json.dump(predictions_single_seq, open(sequences_name+'_b2b.json', 'w'), indent=2)
 
 predictions=msaSuite.getDistributions()
-json.dump(predictions, open('b2b_msa_stats_'+sequences_name+'.json', 'w'), indent=2)
+json.dump(predictions, open(sequences_name+'b2b_stats.json', 'w'), indent=2)

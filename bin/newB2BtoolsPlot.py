@@ -3,6 +3,7 @@ import pandas as pd
 import glob
 import itertools
 import sys
+import re
 
 
 b2bfile=sys.argv[1]# 'results/b2b_msa_results_example_filtered_AA_checked.json' #
@@ -17,7 +18,7 @@ min_occ=sys.argv[3]
 outname=b2bfile.split('.')[0]
 
 
-env_info=pd.read_csv(env_info,sep='\t')
+env_info_df=pd.read_csv(env_info,sep='\t')
 
 try:
     clade_df=pd.read_csv(clade_csv,sep='\t',usecols=['strain','category'])
@@ -48,8 +49,8 @@ def json_to_df(infile):
     #print(df)
     return df
 
-# Step 1: Create a function that matches strains from df2 to df1
 def find_strain_in_index(index_value, strain_list):
+    # Create a function that matches strains from df2 to df1 partially
     for strain in strain_list:
         if re.search(strain, index_value):
             return strain
@@ -87,27 +88,17 @@ def df_to_csv(df,clade_df):
     df['short_strain'] = df['index'].apply(lambda x: find_strain_in_index(x, strain_list))
 
     # Step 3: Merge df1 and df2 based on the 'strain' column
-    result = pd.merge(df, env_info_df,right_on='short_strain', left_on='strain', how='left')
-
+    df = pd.merge(df, env_info_df,left_on='short_strain', right_on='strain', how='left')
 
     statdfs=[]
-    cols = df.columns.values.tolist()
-
+    cols=['backbone', 'sidechain', 'ppII', 'coil', 'sheet', 'helix', 'earlyFolding', 'disoMine']
     for col in cols:
-        if 'sequence' in col:
-            continue
-        if 'category'in col:
-            continue
-        if 'species'in col:
-            continue
-        if 'index'in col:
-            continue
-        if 'strain'in col:
-            continue
-        if 'execution_time'in col:
+        dfcols=df.columns.values.tolist()
+        if col not in dfcols:
+            print('Property', col, 'not calculated')
             continue
             
-        dfname=outname+'_'+col+'.csv'
+        dfname=outname+'_'+col+'.tsv'
         outdf = df[col].apply(pd.Series)
         #outdf['category'] = outdf.index.str.split('_',n=1,).str[0]
         outdf['category'] = df['category']
@@ -118,25 +109,26 @@ def df_to_csv(df,clade_df):
 
         #df for pca
         pca_df=outdf.drop(columns=['sequence'])
-        print(pca_df)
+        
+        pca_df['temp'] = df['temp'] #should make this generic for all env properties
         pca_df=pca_df.add_prefix('R')#, axis =1)
-        pca_df.rename(columns={'Rspecies':'species','Rcategory': 'category'}, inplace=True)
+        pca_df.rename(columns={'Rspecies':'species','Rcategory': 'category', 'Rtemp':'temp'}, inplace=True)
         
         
         pca_df.dropna(axis=1, how='any', inplace=True)
         
         
         nrow,ncol=pca_df.shape
-        pca_df.insert(ncol-2,'','')
+        #pca_df.insert(ncol-2,'','')
         
         pca_df=pca_df.transpose()
 
-        pcaname=outname+'_'+col+'_pca.csv'
+        pcaname=outname+'_'+col+'_pca.tsv'
         pca_df.to_csv(pcaname)
 
         #get stats df
         statdf=outdf.groupby('category').describe().stack()
-        statname=outname+'_'+col+'_stats.csv'
+        statname=outname+'_'+col+'_stats.tsv'
         statdf.to_csv(statname)
 
         statdfs.append((col,statname))
@@ -194,7 +186,7 @@ b2bfile_df=json_to_df(b2bfile)
 b2bfile_df=json_to_df(b2bfile)
 
 stat_csv= df_to_csv(b2bfile_df,clade_df)
-#fillis = glob.glob("*_stats.csv")
+#fillis = glob.glob("*_stats.tsv")
 
 for tup in stat_csv:
     statname=tup[0]
