@@ -24,7 +24,7 @@ process runCsubst{
     publishDir "$params.outFolder/csubst", mode: "copy"
 
     input:
-    tuple val(id), path (multipleSequenceAlignmentNuc), path (rootedTree), path (iqtreefiles)
+    tuple val(id), path(multipleSequenceAlignmentNuc), path(rootedTree), path(iqtreefiles)
 
     output:
     path "csubst_*" , emit: csubstOut
@@ -32,7 +32,7 @@ process runCsubst{
     script:
     """
     outgroup=${params.outGroup}
-    echo "1	\$outGroup" > foreground.txt
+    echo "1	\$outgroup" > foreground.txt
     cat foreground.txt
 
     csubst analyze --alignment_file ${multipleSequenceAlignmentNuc}  --rooted_tree_file ${rootedTree} --iqtree_redo no \
@@ -55,21 +55,30 @@ process runCsubst{
 
 process runCsubstBranch{
 
-    publishDir "$params.outFolder/csubst", mode: "copy"
+    publishDir "$params.outFolder/csubst/$oid", mode: "copy"
     label  'tinysnail'
-    tag "${multipleSequenceAlignmentNuc.name}"
+    tag "${oid}"
 
     input:
-    path multipleSequenceAlignmentNuc
-    path rootedTree
-    path csubstOutZip
-    val branchIds
+
+    tuple val(oid), path(multipleSequenceAlignmentNuc), path(rootedTree), path(iqtreefiles), val(branchIds)
 
     output:
     path "csubst_*" , emit: csubstBranchOut
 
     script:
     """
+
+    outgroup=${params.outGroup}
+    echo "1	\$outgroup" > foreground.txt
+    cat foreground.txt
+
+    csubst analyze --alignment_file ${multipleSequenceAlignmentNuc}  --rooted_tree_file ${rootedTree} --iqtree_redo no \
+        --foreground foreground.txt \
+        --fg_exclude_wg no \
+        --cutoff_stat 'OCNany2spe,2.0|omegaCany2spe,5.0' \
+        --max_arity 10 \
+        --exhaustive_until 3
 
     if [ '$branchIds' = 'all' ]; then
         echo "starting scan"
@@ -94,17 +103,14 @@ process runCsubstBranch{
 
 
 process runEteEvol{
-    errorStrategy 'ignore'
-    label  'tinysnail'
-    tag "${multipleSequenceAlignmentNuc.name}"
+
+    tag "${oid}"
     conda '/Users/sophie/miniconda3/envs/ete3'
 
-    publishDir "$params.outFolder/dnds", mode: "copy"
+    publishDir "$params.outFolder/", mode: "copy"
 
     input:
-    path multipleSequenceAlignmentNuc
-    path rootedTree
-    each eteEvol 
+    tuple val(oid), path(multipleSequenceAlignmentNuc), path(rootedTree), val(evolModel)
 
     output:
     //path "ete_${multipleSequenceAlignmentNuc}_*_out.tar.gz" , emit: eteOut
@@ -113,17 +119,15 @@ process runEteEvol{
     script:
 
     """
-
-    ete3 evol -t $rootedTree --alg $multipleSequenceAlignmentNuc --models M7 M8  --leaves --tests M7 M8 -o ete_out/  --cpu 10 -i ete_out/mypic.png &| tee etelog.log
-
-    python $projectDir/bin/EteEvol.py ${multipleSequenceAlignmentNuc.name} $rootedTree $multipleSequenceAlignmentNuc $eteEvol
+    mkdir ete_out
+    ete3 evol -t $rootedTree --alg $multipleSequenceAlignmentNuc --models $evolModel  --leaves --tests $evolModel -o ete_out/ --cpu 10  >> ete_out/etelog_${oid}.log
     
     """
+    //ete3 evol -t $rootedTree --alg $multipleSequenceAlignmentNuc --models $evolModel  --leaves --tests $evolModel -o ete_out/ --cpu 10  -i ete_out/mypic.png >> ete_out/etelog_${oid}.log
+        // error: end of tree file.qt.qpa.xcb: could not connect to display 
+        //qt.qpa.plugin: Could not load the Qt platform plugin "xcb" in "" even though it was found.
+    
+    
     //python $projectDir/bin/EteEvol.py ${multipleSequenceAlignmentNuc.name} $rootedTree $multipleSequenceAlignmentNuc $eteEvol
-    //ete3 evol -t $rootedTree --alg $multipleSequenceAlignmentNuc --models  b_free b_neut --leaves --tests b_free,b_neut -o ete_out/  --cpu 10
-      //tar -cvzhf ete_${multipleSequenceAlignmentNuc}_${eteEvol}_out.tar.gz pamlwd/ plots/
-  
-
-
-
+    //tar -cvzhf ete_${multipleSequenceAlignmentNuc}_${eteEvol}_out.tar.gz pamlwd/ plots/
 }

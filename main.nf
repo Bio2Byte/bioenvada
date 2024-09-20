@@ -120,9 +120,7 @@ include { compressDirectory } from "${projectDir}/modules/utils"
 
 
 workflow {
-
-    //redo preprocessing
-    // setting: protein - proteome
+    
     params.compressedFile   = params.outFolder
 
     if (params.preprocessing == 'protein'){
@@ -167,12 +165,7 @@ workflow {
                 valid: it.sequence.count('X') / it.sequence.size() < 0.5
                 invalid: it.sequence.count('X') / it.sequence.size() >= 0.5
             }.set { result}
-        /*
-                invalid:  it.header =~ /_Pro_/
-                valid: true
-        result.invalid.last().view{ "INVALID >${it.header}" }
-        result.invalid.view{ "INVALID >${it.header}" }
-        */
+
         sequencesSanitized = result.valid
         sequencesValid = sequencesSanitized.collectFile( newLine: true) {
                     item -> [ "${item.orthologID}_filtered.fasta", '>' + item.header + '\n' + item.sequence]
@@ -242,7 +235,6 @@ workflow {
             takeMultipleSequenceAlignment(msaAA, params.buildTreeEvo, params.qc)
             multipleSequenceAlignment = takeMultipleSequenceAlignment.out.multipleSequenceAlignment
 
-            //map aa ali to nucs with macse
             mapMSA(multipleSequenceAlignment,params.nucToMap)
             multipleSequenceAlignmentNuc=mapMSA.out.msaNuc
 
@@ -317,28 +309,33 @@ workflow {
 
     if (params.cladePlots){ 
         if (params.groupInfo){
-            //cladePlots(predictBiophysicalFeatures.out.predictions,params.b2bfigwidth,params.b2boccupancy,params.groupInfo,params.envInfoFile)
-            //this will also need to take tuple import??
+            //this needs testing
+                      
+            mapB2Bjson = predictBiophysicalFeatures
+                .out.predictions
+                .map(it -> tuple(it.baseName[params.orthologIDLen] , it))
+                .combine(Channel.fromPath(params.groupInfo))
+
+
+            mapB2Bjson.combine(Channel.fromPath(params.envInfoFile)).view()
+            mapB2Bjson.combine(Channel.fromPath(params.envInfoFile)) | cladePlots
+
         }
         else{
-//this step needs matching of b2btools out and cladeT
             treeToClade(phylogeneticTree)
             cladeTab = treeToClade.out.cladeTab
 
 
             mapCladeTab = cladeTab.map(it -> tuple(it.baseName[params.orthologIDLen] , it))
             mapB2Bjson = predictBiophysicalFeatures.out.predictions.map(it -> tuple(it.baseName[params.orthologIDLen] , it))
-
             mapB2Bjson.join(mapCladeTab, remainder:true)
                 .branch {
-                    cladeNotFound:        it[1] == null
-                    b2bNotFound:       it[2] == null
-                    mapped:         true //it[1] != null || it[2] !=null
+                    cladeNotFound:  it[1] == null
+                    b2bNotFound:    it[2] == null
+                    mapped:         true 
                 }.set{matchCladesB2B}
 
-            matchCladesB2B.mapped.flatMap().view()
-            matchCladesB2B.mapped.combine(Channel.fromPath(params.envInfoFile))| cladePlots
-            //cladePlots(predictBiophysicalFeatures.out.predictions,params.b2bfigwidth,params.b2boccupancy,cladeTab,params.envInfoFile)  
+            matchCladesB2B.mapped.combine(Channel.fromPath(params.envInfoFile))| cladePlots 
         }
         
     }
@@ -355,19 +352,9 @@ workflow {
 
 
     if (params.csubst) {
-
         findRoot(phylogeneticTree, params.outGroup)
         rootedTree = findRoot.out.rootedTree
 
-
-
-//this step needs matching of msa and tree
-//this step needs matching of msa and tree
-//this step needs matching of msa and tree
-//this step needs matching of msa and tree
-//this step needs matching of msa and tree
-//this step needs matching of msa and tree
-//this step needs matching of msa and tree
         mapAli = multipleSequenceAlignmentNuc.map(it -> tuple(it.baseName[params.orthologIDLen], it))
         mapTree = rootedTree.map(it -> tuple(it.baseName[params.orthologIDLen] , it))
 
@@ -375,7 +362,7 @@ workflow {
             .branch {
                 aliNotFound:        it[1] == null
                 treeNotFound:       it[2] == null
-                mapped:         true
+                mapped:             true
             }.set{matchAliTree}
         
         mapIqtreeFiles =iqtreeFiles.map(it -> tuple(it[0].baseName[params.orthologIDLen] ,it))
@@ -386,23 +373,21 @@ workflow {
                     treeNotFound:       it[2] == null
                     mapped:         true 
                 }.set{matchAliTreeIq}
-        matchAliTreeIq.mapped.view()
+        //matchAliTreeIq.mapped.view()
 
-        matchAliTreeIq.mapped.flatMap() | runCsubst
-        //runCsubst(multipleSequenceAlignmentNuc, rootedTree,iqtreeFiles, params.outGroup)
-        csubstOutZip = runCsubst.out.csubstOut
+        if (params.branchIds) {
+            matchAliTreeIq.mapped.combine(Channel.of(params.branchIds)) | runCsubstBranch
+            //runCsubstBranch(multipleSequenceAlignmentNuc, rootedTree, csubstOutZip, params.branchIds)
+            csubstOut = runCsubstBranch.out.csubstBranchOut
+        } else{
+            matchAliTreeIq.mapped | runCsubst
+            csubstOut = runCsubst.out.csubstOut
+        }
+
     } else{
         rootedTree = Channel.empty()
-        csubstOutZip = Channel.empty()
+        csubstOut = Channel.empty()
     }
-
-    if (params.branchIds) {
-        runCsubstBranch(multipleSequenceAlignmentNuc, rootedTree, csubstOutZip, params.branchIds)
-        csubstBranchOutZip = runCsubstBranch.out.csubstBranchOut
-    } else{
-        csubstBranchOutZip = Channel.empty()
-    }
-    
 
 
     if (params.eteEvol) {
@@ -410,34 +395,20 @@ workflow {
             findRoot(phylogeneticTree, params.outGroup )
             rootedTree = findRoot.out.rootedTree
 
-//this step needs matching of msa and tree
-//this step needs matching of msa and tree
-//this step needs matching of msa and tree
-//this step needs matching of msa and tree
-//this step needs matching of msa and tree
-            mapTree = rootedTree.map(it -> tuple(it.baseName[params.orthologIDLen] , it.name))
+            mapTree = rootedTree.map(it -> tuple(it.baseName[params.orthologIDLen] , it))
+
             mapAli.join(mapTree, remainder:true)
                 .branch {
                     aliNotFound:        it[1] == null
                     treeNotFound:       it[2] == null
-                    modelFound:         true //it[1] != null || it[2] !=null
+                    mapped:             true
                 }.set{matchAliTree}
-            
-            matchAliTree.modelFound.view()
-
         }
 
-        modelList = params.eteEvol?.split(',') as List
-        modelChannel = Channel.fromList(modelList)
+        //modelList = params.eteEvol?.split(',') as List
+        //modelChannel = Channel.fromList(modelList)
 
-
-//this step needs matching of msa and tree
-//this step needs matching of msa and tree
-//this step needs matching of msa and tree
-//this step needs matching of msa and tree
-//this step needs matching of msa and tree
-
-        runEteEvol(multipleSequenceAlignmentNuc, rootedTree, modelChannel)
+        matchAliTree.mapped.combine(Channel.of(params.eteEvol)) | runEteEvol
         eteOutZip = runEteEvol.out.eteOut.toList()
 
     } else{
@@ -445,7 +416,7 @@ workflow {
         eteOutZip = Channel.empty()
     }
 
-//this step needs matching of msa and ete/csubst out
+    //this step needs matching of msa and ete/csubst out
     //plotEvoVsPhys(eteOutZip,csubstBranchOutZip,predictBiophysicalFeatures.out.stats)
 
    

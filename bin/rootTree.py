@@ -2,6 +2,12 @@
 import sys
 from ete3 import Tree
 
+
+#allow root to be group of seqs! > get common anc of cya &vulcanococcus as root
+#ancestor = t.get_common_ancestor("E","D")
+#t.set_outgroup(ancestor)
+
+
 phylogeneticTree = sys.argv[1] 
 outGroup =sys.argv[2]   #'Cya_NS01_5_2B_1_CK_Cya_NS01_01838_1666461_1666877_1_CK_00001561_null'
 

@@ -43,6 +43,7 @@ print(vals)
 
 with open('selectedbranches.txt','a')as sel:
     for val in vals:
+        val=val.replace(',,',',')
         sel.write(val +'\n')
 
 
