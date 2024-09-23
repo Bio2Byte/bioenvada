@@ -1,8 +1,8 @@
 #!/bin/bash
 now=`date +"%s"`
 data=example 
-nextflow run main.nf \
-    -profile standard,withdocker \
+nextflow run main.nf -resume\
+    -profile standard,withconda \
     --targetSequences "/home/sheidig/bioenvada/sequences/*.fasta" \
     --preprocessing "proteome" \
     --alignSequences \
@@ -11,14 +11,15 @@ nextflow run main.nf \
     --disomine \
     --plotBiophysicalFeatures \
     --fetchStructures false \
-    --csubst \
-    --branchIds '1,5' \
-    --eteEvol 'M8' \
     --outGroup 'Cya_NS01' \
     --selectedProteins  'AncNode14,Syn_BIOS_U3' \
     --buildLogo \
-    --plotTree 'evo' \
-    --cladePlots ${pwd}/results/testerClades.tsv
+    --cladePlots \
+    --csubst \
+    --branchIds 'all' \
+    --eteEvol 'M7 M8' \
+
+#--cladePlots ${pwd}/results/testerClades.tsv
 
 
 #-resume \

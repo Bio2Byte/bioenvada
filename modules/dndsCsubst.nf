@@ -105,7 +105,6 @@ process runCsubstBranch{
 process runEteEvol{
 
     tag "${oid}"
-    conda '/Users/sophie/miniconda3/envs/ete3'
 
     publishDir "$params.outFolder/", mode: "copy"
 

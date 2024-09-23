@@ -118,6 +118,7 @@ include {
 
 include { compressDirectory } from "${projectDir}/modules/utils"
 
+include {tempRec} from "${projectDir}/modules/reconstruction"
 
 workflow {
     
@@ -419,6 +420,14 @@ workflow {
     //this step needs matching of msa and ete/csubst out
     //plotEvoVsPhys(eteOutZip,csubstBranchOutZip,predictBiophysicalFeatures.out.stats)
 
+    if (params.envInfoFile)   {
+        
+        tempRec(rootedTree, params.envInfoFile)
+        recTemps=tempRec.out.recTemps
+
+    }else{
+        recTemps=Channel.empty()
+    }
    
 
 }
