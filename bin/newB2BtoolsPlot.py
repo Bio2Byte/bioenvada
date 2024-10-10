@@ -121,7 +121,7 @@ def df_to_csv(df,clade_df):
         nrow,ncol=pca_df.shape
         #pca_df.insert(ncol-2,'','')
         
-        pca_df=pca_df.transpose()
+        #pca_df=pca_df.transpose()
 
         pcaname=outname+'_'+col+'_pca.tsv'
         pca_df.to_csv(pcaname)

@@ -100,7 +100,7 @@ process cladePlots {
     output:
     path '*.pdf', optional: true 
     path '*.png', optional: true 
-    path '*.tsv' , emit: b2bPerTool
+    path '*pca.tsv' , emit: b2bPerTool
 
     script:
 

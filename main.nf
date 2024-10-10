@@ -118,7 +118,10 @@ include {
 
 include { compressDirectory } from "${projectDir}/modules/utils"
 
-include {tempRec} from "${projectDir}/modules/reconstruction"
+include {
+    tempRec ; 
+    pic
+} from "${projectDir}/modules/reconstruction"
 
 workflow {
     
@@ -337,6 +340,8 @@ workflow {
                 }.set{matchCladesB2B}
 
             matchCladesB2B.mapped.combine(Channel.fromPath(params.envInfoFile))| cladePlots 
+
+            traitFiles=cladePlots.out.b2bPerTool
         }
         
     }
@@ -428,6 +433,17 @@ workflow {
     }else{
         recTemps=Channel.empty()
     }
+
+    if (params.pic)   {
+        //traitFiles_ch=Channel.of(traitFiles)
+        //traitFiles_ch.view()
+        pic(rootedTree, traitFiles)
+        pic_out=pic.out
+
+    }else{
+        pic_out=Channel.empty()
+    }
+
    
 
 }
@@ -436,7 +452,7 @@ workflow.onComplete {
     println "Pipeline completed at               : $workflow.complete"
     println "Time to complete workflow execution : $workflow.duration"
     println "Execution status                    : ${workflow.success ? 'Success' : 'Failed' }"
-    println "Compressed file                     : $params.outFolder/${params.compressedFile}.tar.gz"
+    //println "Compressed file                     : $params.outFolder/${params.compressedFile}.tar.gz"
     println "${workflow}.commandLine"
 }
 
