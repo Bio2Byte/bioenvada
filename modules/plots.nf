@@ -1,7 +1,7 @@
 
 process plotBiophysicalFeaturesOverview {
     
-    publishDir "$params.outFolder/plots/b2b", mode: "copy"
+    publishDir "$params.outFolder/${msa.baseName.substring(0, 11)}/plots/b2b", mode: "copy"
 
     tag "${msa.name}"
     debug true
@@ -30,7 +30,7 @@ process plotBiophysicalFeaturesOverview {
 process plotPhylogeneticTree {
 
 
-    publishDir "$params.outFolder/plots/", mode: "copy"
+    publishDir "$params.outFolder/${tree.baseName.substring(0, 11)}/plots/", mode: "copy"
     tag "${tree.name}"
     debug true
 
@@ -65,7 +65,7 @@ process plotPhylogeneticTree {
 
 process plotEvoVsPhys {
 
-    publishDir "$params.outFolder/plots/evo_v_b2b", mode: "copy"
+    publishDir "$params.outFolder/${b2bjson.baseName.substring(0, 11)}/plots/evo_v_b2b", mode: "copy"
     errorStrategy 'ignore'
     debug true
     input:
@@ -92,7 +92,7 @@ process plotEvoVsPhys {
 
 process cladePlots {
 
-    publishDir "$params.outFolder/plots/clade_plots", mode: "copy"
+    publishDir "$params.outFolder/${b2bjson.baseName.substring(0, 11)}/plots/clade_plots", mode: "copy"
     
     input:
     tuple val(oid), path(b2bjson), path(cladeTab), path(envInfoFile)

@@ -1,5 +1,5 @@
 process predictBiophysicalFeatures {
-    publishDir "$params.outFolder/msa", mode: "copy"
+    publishDir "$params.outFolder/${sequences.baseName.substring(0, 11)}/msa", mode: "copy"
 
     tag "${sequences.name}"
     errorStrategy 'finish'
@@ -27,10 +27,10 @@ process predictBiophysicalFeatures {
 
 process buildMultipleSequenceAlignmentNuc {
 
-    publishDir "$params.outFolder/msa", mode: "copy"
+    publishDir "${params.outFolder}/${sequences.baseName.substring(0, 11)}/msa", mode: "copy"
 
     label  'bigboy'
-    tag "${sequences.name}"
+    tag "${sequences.baseName}"
 
     input:
     path sequences
@@ -48,7 +48,7 @@ process buildMultipleSequenceAlignmentNuc {
 
 process buildMultipleSequenceAlignmentAA {
 
-    publishDir "$params.outFolder/msa", mode: "copy"
+    publishDir "$params.outFolder/${sequences.baseName.substring(0, 11)}/msa", mode: "copy"
 
     label  'bigboy'
     tag "${sequences.name}"
@@ -67,7 +67,7 @@ process buildMultipleSequenceAlignmentAA {
 
 process takeMultipleSequenceAlignment {
 
-    publishDir "$params.outFolder/msa", mode: "copy"
+    publishDir "$params.outFolder/${sequences.baseName.substring(0, 11)}/msa", mode: "copy"
     tag "${sequences.name}"
 
     input:
@@ -87,7 +87,7 @@ process takeMultipleSequenceAlignment {
 
 process takeMultipleSequenceAlignmentNuc {
 
-    publishDir "$params.outFolder/msa", mode: "copy"
+    publishDir "$params.outFolder/${sequences.baseName.substring(0, 11)}/msa", mode: "copy"
     tag "${sequences.name}"
 
     input:
@@ -107,7 +107,7 @@ process takeMultipleSequenceAlignmentNuc {
 
 process buildPhylogeneticTree {
 
-    publishDir "$params.outFolder/tree", mode: "copy"
+    publishDir "$params.outFolder/${multipleSequenceAlignment.baseName.substring(0, 11)}/tree", mode: "copy"
 
     label  'bigboy'
     tag "${multipleSequenceAlignment.name}"
@@ -131,7 +131,7 @@ process buildPhylogeneticTree {
 
 process buildPhylogeneticTreeEvol {
 
-    publishDir "$params.outFolder/tree", mode: "copy"
+    publishDir "$params.outFolder/${multipleSequenceAlignmentNuc.baseName.substring(0, 11)}/tree", mode: "copy"
 
     label  'bigboy'
     tag "${multipleSequenceAlignmentNuc.name}"
@@ -153,7 +153,7 @@ process buildPhylogeneticTreeEvol {
 
 process buildLogo {
 
-    publishDir "$params.outFolder/msa", mode: "copy"
+    publishDir "$params.outFolder/${multipleSequenceAlignment.baseName.substring(0, 11)}/msa", mode: "copy"
     tag "${multipleSequenceAlignment.name}"
 
     input:
@@ -171,7 +171,7 @@ process buildLogo {
 
 process treeToClade {
 
-    publishDir "$params.outFolder/tree", mode: "copy"
+    publishDir "$params.outFolder/${tree.baseName.substring(0, 11)}/tree", mode: "copy"
     tag "${tree.baseName}"
 
     input:
@@ -192,7 +192,7 @@ process treeToClade {
 }
 
 process mapMSA {
-    publishDir "$params.outFolder/msa", mode: "copy"
+    publishDir "$params.outFolder/${alignment.baseName.substring(0, 11)}/msa", mode: "copy"
 
     tag "${alignment.name}"
 

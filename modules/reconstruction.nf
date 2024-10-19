@@ -1,6 +1,6 @@
 process tempRec{
     tag "${phylogeneticTree.baseName}"
-    publishDir "$params.outFolder/reconstructions", mode: "copy"
+    publishDir "$params.outFolder/${phylogeneticTree.baseName.substring(0, 11)}/reconstructions", mode: "copy"
 
     input:
     path phylogeneticTree
@@ -18,7 +18,7 @@ process tempRec{
 
 process pic{
     tag "${phylogeneticTree.baseName}"
-    publishDir "$params.outFolder/pic", mode: "copy"
+    publishDir "$params.outFolder/${phylogeneticTree.baseName.substring(0, 11)}/pic", mode: "copy"
 
     input:
     path phylogeneticTree

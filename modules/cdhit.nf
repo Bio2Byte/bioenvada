@@ -1,7 +1,7 @@
 process cdHitClustering{
     tag "${sequencesValid.name}"
 
-    publishDir "$params.outFolder/cd_hit", mode: "copy"
+    publishDir "$params.outFolder/${sequencesValid.baseName.substring(0, 11)}/cd_hit", mode: "copy"
 
     input:
     path sequencesValid
@@ -38,7 +38,7 @@ process cdHitClustering{
 process postClusteringLabels{
     tag "${sequencesValid.name}"
 
-    publishDir "$params.outFolder/cd_hit", mode: "copy"
+    publishDir "$params.outFolder/${sequencesValid.baseName.substring(0, 11)}/cd_hit", mode: "copy"
 
     input:
     path sequencesValid

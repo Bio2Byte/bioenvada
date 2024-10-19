@@ -1,7 +1,7 @@
 process findRoot{
     tag "${outGroup}"
 
-    publishDir "$params.outFolder/tree", mode: "copy"
+    publishDir "$params.outFolder/${phylogeneticTree.baseName.substring(0, 11)}/tree", mode: "copy"
 
     input:
     path phylogeneticTree
@@ -21,7 +21,7 @@ process runCsubst{
     label  'tinysnail'
     tag "${multipleSequenceAlignmentNuc.name}"
 
-    publishDir "$params.outFolder/csubst", mode: "copy"
+    publishDir "$params.outFolder/${multipleSequenceAlignmentNuc.baseName.substring(0, 11)}/csubst", mode: "copy"
 
     input:
     tuple val(id), path(multipleSequenceAlignmentNuc), path(rootedTree), path(iqtreefiles)
@@ -55,7 +55,7 @@ process runCsubst{
 
 process runCsubstBranch{
 
-    publishDir "$params.outFolder/csubst/$oid", mode: "copy"
+    publishDir "$params.outFolder/${multipleSequenceAlignmentNuc.baseName.substring(0, 11)}/csubst/$oid", mode: "copy"
     label  'tinysnail'
     tag "${oid}"
 
@@ -106,7 +106,7 @@ process runEteEvol{
 
     tag "${oid}"
 
-    publishDir "$params.outFolder/", mode: "copy"
+    publishDir "$params.outFolder/${multipleSequenceAlignmentNuc.baseName.substring(0, 11)}/", mode: "copy"
 
     input:
     tuple val(oid), path(multipleSequenceAlignmentNuc), path(rootedTree), val(evolModel)

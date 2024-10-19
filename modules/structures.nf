@@ -26,7 +26,7 @@ process fetchEsmAtlasStructure {
 
 process aaaToaaSeq {
 
-    publishDir "$params.outFolder/msa", mode: "copy"
+    publishDir "$params.outFolder/${multipleSequenceAlignment.baseName.substring(0, 11)}/msa", mode: "copy"
     tag "${multipleSequenceAlignment}"
 
     input:
