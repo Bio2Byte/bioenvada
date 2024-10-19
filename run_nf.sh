@@ -1,23 +1,26 @@
 #!/bin/bash
 now=`date +"%s"`
 data=example 
-nextflow run main.nf -resume\
+nextflow run main.nf -resume \
     -profile standard,withconda \
     --targetSequences "/home/sheidig/bioenvada/sequences/*.fasta" \
     --preprocessing "proteome" \
+    --envInfoFile "/home/sheidig/bioenvada/sequences/temp_info.tsv" \
     --alignSequences \
     --buildTreeEvo \
     --efoldmine \
     --disomine \
     --plotBiophysicalFeatures \
     --fetchStructures false \
-    --outGroup 'Cya_NS01' \
+    --outGroup 'NS01,Node41' \
     --selectedProteins  'AncNode14,Syn_BIOS_U3' \
     --buildLogo \
     --cladePlots \
     --csubst \
     --branchIds 'all' \
+    --foregroundFile "/home/sheidig/bioenvada/sequences/foreground.txt" \
     --eteEvol 'M7 M8' \
+    --pic
 
 #--cladePlots ${pwd}/results/testerClades.tsv
 

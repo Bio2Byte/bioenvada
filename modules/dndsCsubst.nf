@@ -24,33 +24,21 @@ process runCsubst{
     publishDir "$params.outFolder/${multipleSequenceAlignmentNuc.baseName.substring(0, 11)}/csubst", mode: "copy"
 
     input:
-    tuple val(id), path(multipleSequenceAlignmentNuc), path(rootedTree), path(iqtreefiles)
-
+    tuple val(id), path(multipleSequenceAlignmentNuc), path(rootedTree), path(iqtreefiles), path (foregroundFile)
     output:
     path "csubst_*" , emit: csubstOut
 
     script:
     """
-    outgroup=${params.outGroup}
-    echo "1	\$outgroup" > foreground.txt
-    cat foreground.txt
-
     csubst analyze --alignment_file ${multipleSequenceAlignmentNuc}  --rooted_tree_file ${rootedTree} --iqtree_redo no \
-        --foreground foreground.txt \
+        --foreground  ${foregroundFile} \
         --fg_exclude_wg no \
         --cutoff_stat 'OCNany2spe,2.0|omegaCany2spe,5.0' \
         --max_arity 10 \
         --exhaustive_until 3
     
     """
-} // python $projectDir/bin/cSubstAnalyzer.py csubst_cb_2.tsv csubst_s.tsv
-//  echo '1	Syn_KORDI_100.*' > foreground.txt
-//    echo '2	Syn_TAK9802.*' >> foreground.txt
-//    echo '3	Syn_RS9916.*' >> foreground.txt
-//    echo '4	Syn_BOUM118.*' >> foreground.txt
-//    echo '5	Syn_WH7.*' >> foreground.txt
- //   echo '4	Syn_WH8103.*' >> foreground.txt
-  //  echo '6	Syn_A15.*' >> foreground.txt
+} 
 
 
 process runCsubstBranch{
@@ -61,20 +49,17 @@ process runCsubstBranch{
 
     input:
 
-    tuple val(oid), path(multipleSequenceAlignmentNuc), path(rootedTree), path(iqtreefiles), val(branchIds)
+    tuple val(oid), path(multipleSequenceAlignmentNuc), path(rootedTree), path(iqtreefiles), val(branchIds), path (foregroundFile)
 
     output:
     path "csubst_*" , emit: csubstBranchOut
 
     script:
     """
-
-    outgroup=${params.outGroup}
-    echo "1	\$outgroup" > foreground.txt
     cat foreground.txt
 
     csubst analyze --alignment_file ${multipleSequenceAlignmentNuc}  --rooted_tree_file ${rootedTree} --iqtree_redo no \
-        --foreground foreground.txt \
+        --foreground ${foregroundFile} \
         --fg_exclude_wg no \
         --cutoff_stat 'OCNany2spe,2.0|omegaCany2spe,5.0' \
         --max_arity 10 \
@@ -97,8 +82,11 @@ process runCsubstBranch{
     else
         csubst site --alignment_file ${multipleSequenceAlignmentNuc}  --rooted_tree_file ${rootedTree} --branch_id ${branchIds} 
     fi
-    
     """
+
+   // echo '1	Syn_RS9902' > foreground.txt
+   // echo '1	Syn_TAK9802' >> foreground.txt
+    //echo '1	Syn_A15_127' >> foreground.txt
 }
 
 

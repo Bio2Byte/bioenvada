@@ -382,11 +382,11 @@ workflow {
         //matchAliTreeIq.mapped.view()
 
         if (params.branchIds) {
-            matchAliTreeIq.mapped.combine(Channel.of(params.branchIds)) | runCsubstBranch
+            matchAliTreeIq.mapped.combine(Channel.of(params.branchIds)).combine(Channel.fromPath(params.foregroundFile)) | runCsubstBranch
             //runCsubstBranch(multipleSequenceAlignmentNuc, rootedTree, csubstOutZip, params.branchIds)
             csubstOut = runCsubstBranch.out.csubstBranchOut
         } else{
-            matchAliTreeIq.mapped | runCsubst
+            matchAliTreeIq.mapped.combine(Channel.fromPath(params.foregroundFile))  | runCsubst
             csubstOut = runCsubst.out.csubstOut
         }
 
