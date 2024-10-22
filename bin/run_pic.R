@@ -9,15 +9,15 @@ prepare_data <- function(treefile, trait_file) {
   phylo_tree <- read.tree(file = treefile)
 
   trait_data <- read.table(trait_file, header = TRUE, sep = ",")
+  print (trait_data)
 
   new_trait_data <- trait_data %>% select(species, everything())
-  
-  return(list(phylo_tree = phylo_tree, trait_data = new_trait_data))
+  print(new_trait_data)
+  return(list(phylo_tree = phylo_tree, new_trait_data = new_trait_data))
 }
 
 # Function to perform PIC
 perform_pic <- function(trait_data, phylo_tree) {
-
   pic_temperature <- pic(trait_data$temp, phylo_tree)
   print(pic_temperature)
 
@@ -75,7 +75,7 @@ plot_correlations <- function(correlation_data, output_file) {
 # Main function to run the workflow
 analyze_tree_and_traits <- function(treefile, trait_file, correlation_output_file, plot_output_file) {
   input_data <- prepare_data(treefile, trait_file)
-  pic_results <- perform_pic(input_data$trait_data, input_data$phylo_tree)
+  pic_results <- perform_pic(input_data$new_trait_data, input_data$phylo_tree)
   
   write.csv(pic_results$correlation_data, correlation_output_file, row.names = FALSE)
   plot_correlations(pic_results$correlation_data, plot_output_file)
@@ -92,7 +92,6 @@ if (length(args) < 2) {
 
 treefile <- args[1]
 trait_file <- args[2]
-print(trait_file)
 correlation_output_file <- paste('pic', trait_file, sep = "")
 plot_output_file <- paste('pic',trait_file,'.png', sep = "")
 

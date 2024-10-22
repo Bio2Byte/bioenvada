@@ -145,9 +145,9 @@ process buildPhylogeneticTreeEvol {
 
     script:
     """
-    iqtree -s $multipleSequenceAlignmentNuc -m ECMK07+F+R4 -B 1000 --seqtype CODON11 -nt AUTO --ancestral --rate 
+    iqtree -s $multipleSequenceAlignmentNuc -m ECMK07+F+R4 -B 10000 -st CODON11 -nt AUTO --ancestral --rate 
     """
-    //iqtree -s $multipleSequenceAlignmentNuc -m ECMK07+F+R4 -B 1000 --seqtype CODON11 --threads-max 1 -T AUTO --ancestral --rate 
+    //iqtree -s $multipleSequenceAlignmentNuc -m ECMK07+F+R4 -B 10000 --seqtype CODON11 --threads-max 1 -T AUTO --ancestral --rate 
 
 }
 
@@ -197,9 +197,10 @@ process mapMSA {
     tag "${alignment.name}"
 
     input:
+    //tuple val(oid), path(alignment), path(sequencesNuc)
     path alignment
     path sequencesNuc
-
+    
     output:
     path "*.anuc", emit: msaNuc
 

@@ -23,11 +23,10 @@ def set_outGroup(outGroup,t):
         if outGroup in node.name:
             setancestor = node.name
     
-    if setancestor == '':
-        raise ValueError("Outgroup not found in tree")
+    #if setancestor == '':
+    #    raise ValueError("Outgroup not found in tree")
     
-    t.set_outgroup(setancestor)
-    return (t) 
+    return (setancestor) 
 
 def find_common_anc(outGroupS,t):
     full_ogs=[]
@@ -39,16 +38,16 @@ def find_common_anc(outGroupS,t):
     
     
     if full_ogs == []:
-        raise ValueError("Outgroups not found in tree")
-
-    print("full names of outgroups",full_ogs)
-
-    ancestor = t.get_common_ancestor(full_ogs)
-    print("lca of outgroups:",ancestor)
-    
-    t.set_outgroup(ancestor.name)
-
-    return (t) 
+        anc= ''
+    elif len(full_ogs) ==1:
+        anc = full_ogs[0]
+        print("lca of outgroups:",anc)
+    else:
+        print("full names of outgroups",full_ogs)
+        ancestor = t.get_common_ancestor(full_ogs)
+        anc = ancestor.name
+        print("lca of outgroups:",anc)
+    return (anc) 
 
 
 
@@ -57,11 +56,15 @@ if outGroup != '':
     outGroupS=outGroup.split(',')
     if len(outGroupS)>1:
         print('find common ancestor of outgroups and root')
-        find_common_anc(outGroupS,t)
+        anc=find_common_anc(outGroupS,t)
     else:
         print('set outgroup as root')
-        set_outGroup(outGroup,t)
-else:
+        anc=set_outGroup(outGroup,t)
+
+
+try:
+    t.set_outgroup(anc)
+except:
     print('no outgroup found, use midpoint rooting')
     ancestor = t.get_midpoint_outgroup()
     t.set_outgroup(ancestor)

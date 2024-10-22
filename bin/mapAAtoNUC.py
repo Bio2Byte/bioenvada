@@ -9,13 +9,13 @@ outname=sys.argv[3]
 aa_df=pd.read_csv(aa_file, header=None)
 aa_df = pd.DataFrame({'label':aa_df[0].iloc[::2].values, 'aseq':aa_df[0].iloc[1::2].values})
 aa_df.label= aa_df.label.str.lstrip(' ')
-aa_df.label = aa_df.label.str.replace('[^a-zA-Z0-9]', '_')
 aa_df.label = aa_df.label.str.replace('-', '_')
+aa_df.label = aa_df.label.str.replace('.', '_')
 
 nuc_df=pd.read_csv(nuc_file, header=None)
 nuc_df = pd.DataFrame({'label':nuc_df[0].iloc[::2].values, 'nseq':nuc_df[0].iloc[1::2].values})
 nuc_df.label= nuc_df.label.str.lstrip(' ')
-nuc_df.label = nuc_df.label.str.replace('[^a-zA-Z0-9]', '_')
+aa_df.label = aa_df.label.str.replace('.', '_')
 nuc_df.label = nuc_df.label.str.replace('-', '_')
 
 seqs_df=aa_df.merge(nuc_df)

@@ -9,6 +9,7 @@ library(RColorBrewer)
 
 #conda install conda-forge::r-ggplot2 conda-forge::r-readr conda-forge::r-dplyr conda-forge::r-stringr bioconda::bioconductor-ggtree  conda-forge::r-ape  conda-forge::r-scales
 
+print("package import done")
 
 
 # Function to map input data: tree and temperature data
@@ -48,17 +49,20 @@ map_input <- function(treefile, temp_file) {
 reconstruct_ancestral_states <- function(tree, temp_data) {
   # Create a temperature vector for tree tips
   temp_vector <- rep(NA, length(tree$tip.label))
-  
   # Map temperatures to tree tips
   for (i in seq_along(tree$tip.label)) {
+    print(tree$tip.label[i])
     match_idx <- match(tree$tip.label[i], temp_data$tree_label)
+    print(match_idx)
+    print(temp_data$temp[match_idx])
     if (!is.na(match_idx)) {
       temp_vector[i] <- temp_data$temp[match_idx]
     }
   }
   
+  print(temp_vector)
   # Ancestral state reconstruction using ace()
-  reconstructed_states <- ace(temp_vector, tree, method = "REML")
+  reconstructed_states <- ace(temp_vector, tree, type='continuous',  method = "pic")
   
   # Combine tip and node temperatures
   full_temp_data <- data.frame(

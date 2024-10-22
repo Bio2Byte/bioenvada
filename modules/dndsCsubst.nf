@@ -107,7 +107,11 @@ process runEteEvol{
 
     """
     mkdir ete_out
-    ete3 evol -t $rootedTree --alg $multipleSequenceAlignmentNuc --models $evolModel  --leaves --tests $evolModel -o ete_out/ --cpu 10  >> ete_out/etelog_${oid}.log
+
+    m=$evolModel
+    models="\${m//,/ }"
+
+    ete3 evol -t $rootedTree --alg $multipleSequenceAlignmentNuc --models \$models  --leaves --tests $evolModel -o ete_out/ --cpu $task.cpus  >> ete_out/etelog_${oid}.log
     
     """
     //ete3 evol -t $rootedTree --alg $multipleSequenceAlignmentNuc --models $evolModel  --leaves --tests $evolModel -o ete_out/ --cpu 10  -i ete_out/mypic.png >> ete_out/etelog_${oid}.log

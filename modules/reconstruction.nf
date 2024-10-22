@@ -21,8 +21,10 @@ process pic{
     publishDir "$params.outFolder/${phylogeneticTree.baseName.substring(0, 11)}/pic", mode: "copy"
 
     input:
-    path phylogeneticTree
-    path traitFilelist
+
+    tuple val(oid), path(traitFilelist), path(phylogeneticTree)
+    //path phylogeneticTree
+    //path traitFilelist
 
     output:
     path '*.tsv'

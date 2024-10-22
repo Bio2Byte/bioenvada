@@ -35,7 +35,6 @@ Usage:
 Launch dir      : $launchDir
 Project dir     : $projectDir
 Execution time  : $params.executionTimestamp
-Compressed file : ${params.compressedFile}.tar.gz
 ================================================================================
                                 INPUT FILES
 
@@ -124,9 +123,6 @@ include {
 } from "${projectDir}/modules/reconstruction"
 
 workflow {
-    
-    params.compressedFile   = params.outFolder
-
     if (params.preprocessing == 'protein'){
         targetSequencesFile     = file(params.targetSequences)
         allSequences            = Channel.fromPath(params.targetSequences)
@@ -174,7 +170,7 @@ workflow {
         sequencesValid = sequencesSanitized.collectFile( newLine: true) {
                     item -> [ "${item.orthologID}_filtered.fasta", '>' + item.header + '\n' + item.sequence]
         }
-        sequencesValid.view()
+        sequencesValid.count().view()
         sequencesRemoved = result.invalid.collectFile(newLine: true) {
                     item -> [ "${item.orthologID}_ignored.fasta", '>' + item.header + '\n' + item.sequence]
         }
@@ -234,13 +230,39 @@ workflow {
 
         }
         else if (params.type == 'both') {
-            multipleSequenceAlignmentNuc = Channel.empty()
             msaAA = sequencesFiltered
             takeMultipleSequenceAlignment(msaAA, params.buildTreeEvo, params.qc)
             multipleSequenceAlignment = takeMultipleSequenceAlignment.out.multipleSequenceAlignment
 
+
             mapMSA(multipleSequenceAlignment,params.nucToMap)
             multipleSequenceAlignmentNuc=mapMSA.out.msaNuc
+            /*if (params.preprocessing == 'protein'){
+
+                mapMSA(multipleSequenceAlignment,params.nucToMap)
+                multipleSequenceAlignmentNuc=mapMSA.out.msaNuc
+
+            }else if (params.preprocessing == 'proteome'){
+                mapAli = multipleSequenceAlignment.collect().map(it -> tuple(it.baseName[params.orthologIDLen], it))
+                mapNuc = Channel.fromPath(params.nucToMap).map(it -> tuple(it.baseName[params.orthologIDLen], it))
+                
+
+                multipleSequenceAlignment.view()
+                mapAli.join(mapNuc, remainder:true)
+                    .branch {
+                        aliNotFound:        it[1] == null
+                        nucNotFound:       it[2] == null
+                        mapped:             true
+                    }.set{matchAliNuc}
+                
+                matchAliNuc.mapped.view()
+
+                matchAliNuc.mapped | mapMSA
+                multipleSequenceAlignmentNuc=mapMSA.out.msaNuc
+           
+            }else{
+                multipleSequenceAlignmentNuc = Channel.empty()
+            } */
 
         }else {println "Please select the input data type with --type 'nuc'"}
         
@@ -422,9 +444,6 @@ workflow {
         eteOutZip = Channel.empty()
     }
 
-    //this step needs matching of msa and ete/csubst out
-    //plotEvoVsPhys(eteOutZip,csubstBranchOutZip,predictBiophysicalFeatures.out.stats)
-
     if (params.envInfoFile)   {
         
         tempRec(rootedTree, params.envInfoFile)
@@ -435,9 +454,16 @@ workflow {
     }
 
     if (params.pic)   {
-        //traitFiles_ch=Channel.of(traitFiles)
-        //traitFiles_ch.view()
-        pic(rootedTree, traitFiles)
+        mapTraitFiles = traitFiles.map(it -> tuple(it[0].baseName[params.orthologIDLen] ,it))
+
+        mapTraitFiles.join(mapTree, remainder:true)
+            .branch {
+                traitNotFound:        it[1] == null
+                treeNotFound:       it[2] == null
+                mapped:             true
+            }.set{matchTraitTree}
+
+        matchTraitTree.mapped | pic
         pic_out=pic.out
 
     }else{
@@ -452,7 +478,6 @@ workflow.onComplete {
     println "Pipeline completed at               : $workflow.complete"
     println "Time to complete workflow execution : $workflow.duration"
     println "Execution status                    : ${workflow.success ? 'Success' : 'Failed' }"
-    //println "Compressed file                     : $params.outFolder/${params.compressedFile}.tar.gz"
     println "${workflow}.commandLine"
 }
 

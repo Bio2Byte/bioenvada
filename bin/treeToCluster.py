@@ -1,4 +1,9 @@
-from ete4 import Tree,NodeStyle#,TreeStyle #ImportError: cannot import name 'TreeStyle' from 'ete4' (/home/sheidig/miniconda3/envs/bioenvada_base/lib/python3.12/site-packages/ete4/__init__.py). 
+from ete4 import Tree
+from ete4 import smNodeStyle
+
+#from ete4.smartview.ete.layouts import TreeStyle
+#from ete4 import Tree,NodeStyle#,TreeStyle #ImportError: cannot import name 'TreeStyle' from 'ete4' (/home/sheidig/miniconda3/envs/bioenvada_base/lib/python3.12/site-packages/ete4/__init__.py). 
+
 import sys
 import numpy as np
 import pandas as pd
@@ -55,15 +60,17 @@ for i in range(dfmin+1,dfmax,stepsize):#range(dfmin,dfmax,20): ##dfmin: ValueErr
     df['clusters']=fcluster(Z, i, criterion='distance')
     clusterlist=list(set(df['clusters'].to_list()))
     print(i, clusterlist)
+
     if 4 in clusterlist:
         clust4hres=i
-    if len(clusterlist) > 2:
+    
+    if len(clusterlist) > 1:
         sil=silhouette_score(a,df.clusters )
         coeffs[i]=sil
     else:
-        sil=silhouette_score(a,df.clusters )
-        coeffs[i]=sil
-        print('only two cluster at', i)
+        #sil=silhouette_score(a,df.clusters )
+        #coeffs[i]=sil
+        print('only 2 cluster before', i)
         break
 
 
@@ -72,6 +79,9 @@ for i in range(dfmin+1,dfmax,stepsize):#range(dfmin,dfmax,20): ##dfmin: ValueErr
 #get max score
 ideal_split_c=max(list(coeffs.values()))
 print(ideal_split_c)
+print(coeffs)
+
+
 ideal_split=list(coeffs.keys())[list(coeffs.values()).index(ideal_split_c)]
 print("Ideal treshold: ", ideal_split)
 
