@@ -111,6 +111,9 @@ process runEteEvol{
     m=$evolModel
     models="\${m//,/ }"
 
+    echo \$models
+    echo cpus $task.cpus
+
     ete3 evol -t $rootedTree --alg $multipleSequenceAlignmentNuc --models \$models  --leaves --tests $evolModel -o ete_out/ --cpu $task.cpus  >> ete_out/etelog_${oid}.log
     
     """

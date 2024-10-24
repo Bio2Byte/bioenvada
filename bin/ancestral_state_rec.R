@@ -33,7 +33,7 @@ map_input <- function(treefile, temp_file) {
   temp_data$tree_label <- sapply(temp_data$strain_label, function(strain) {
     matching_label <- grep(strain, tree_tip_labels, value = TRUE)
     if (length(matching_label) > 0) {
-      return(matching_label[1])  # Return first match
+      return(paste(matching_label, collapse = ", "))  # Return all matches as a comma-separated string
     } else {
       return(NA)
     }
@@ -49,14 +49,29 @@ map_input <- function(treefile, temp_file) {
 reconstruct_ancestral_states <- function(tree, temp_data) {
   # Create a temperature vector for tree tips
   temp_vector <- rep(NA, length(tree$tip.label))
+  
   # Map temperatures to tree tips
   for (i in seq_along(tree$tip.label)) {
     print(tree$tip.label[i])
-    match_idx <- match(tree$tip.label[i], temp_data$tree_label)
-    print(match_idx)
-    print(temp_data$temp[match_idx])
-    if (!is.na(match_idx)) {
-      temp_vector[i] <- temp_data$temp[match_idx]
+    
+    # Iterate through temp_data to find matching labels, accounting for multiple matches
+    match_idx <- sapply(seq_along(temp_data$tree_label), function(j) {
+      labels <- unlist(strsplit(temp_data$tree_label[j], ", "))  # Split the comma-separated list
+      if (tree$tip.label[i] %in% labels) {
+        return(j)
+      } else {
+        return(NA)
+      }
+    })
+    
+    # Remove NA values and get the first match (or handle as needed)
+    match_idx <- match_idx[!is.na(match_idx)]
+    if (length(match_idx) > 0) {
+      selected_match <- match_idx[1]  # Pick the first valid match, modify logic here if needed
+      temp_vector[i] <- temp_data$temp[selected_match]
+      print(temp_data$temp[selected_match])
+    } else {
+      print("No match found")
     }
   }
   
