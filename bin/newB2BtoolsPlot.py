@@ -23,19 +23,16 @@ env_info_df=pd.read_csv(env_info,sep='\t')
 try:
     clade_df=pd.read_csv(clade_csv,sep='\t',usecols=['strain','category'])
 except:
-    clade_df=pd.read_csv(clade_csv,sep='\t',usecols=['index','clusters_globalMax']) ##this is not supposed to be hardcoded !
-    clade_df.rename(columns={"index": "strain", "clusters_globalMax": "category"}, inplace=True)
-
+    clade_df=pd.read_csv(clade_csv,sep='\t',usecols=['index','clusters_set_clades'])
+    clade_df.rename(columns={"index": "strain", "clusters_set_clades": "category"}, inplace=True) ##this is not supposed to be hardcoded !
 sgroup = clade_df['category'].unique()
 
 if 'Cool' in sgroup:
     colors = {'Cold':'blue','Cool':"green", 'Warm':'orange', "Hot":'red'}
-
-    #colors = {"Pro":'grey', 'Cold':'blue','Cool':"green", 'Warm':'orange', "Hot":'red'}
 else:
     colors={}
     for i in range(len(sgroup)):
-        colors[sgroup[i]]=plt.cm.tab10(i)
+        colors[sgroup[i]]=plt.cm.Dark2(i)
 
 def json_to_df(infile):
     df = pd.read_json(infile, orient='index')

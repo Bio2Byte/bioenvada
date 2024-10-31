@@ -197,9 +197,9 @@ process mapMSA {
     tag "${alignment.name}"
 
     input:
-    //tuple val(oid), path(alignment), path(sequencesNuc)
-    path alignment
-    path sequencesNuc
+    tuple val(oid), path(alignment), path(sequencesNuc)
+    //path alignment
+    //path sequencesNuc
     
     output:
     path "*.anuc", emit: msaNuc

@@ -11,21 +11,12 @@ Usage:
     --type 'aa' or 'nuc' \\
     --qc \\ 
     --clustering 0.85\\
-    --relabel \\
     --alignSequences \\
     --efoldmine \\
     --disomine \\
-    --agmata \\
-    --fetchStructures \\
-    --buildTreeEvo \\   
-    --outGroup 'Species name to root your tree on' \\
-    --csubst \\
-    --branchIds '1,2,3'\\
-    --eteEvol 'M7,M8' \\
-    --selectedProteins 'your,proteins,as,str' \\
-    --plotBiophysicalFeatures \\
-    --buildLogo \\
-    --plotTree
+    --buildTree \\   
+    --outGroup 'Species name to root your tree on'
+    --eteEvol 'M7,M8'
 
 ================================================================================
                                 LIST OF PARAMETERS
@@ -123,11 +114,13 @@ include {
 } from "${projectDir}/modules/reconstruction"
 
 workflow {
+    
     if (params.preprocessing == 'protein'){
+          
         targetSequencesFile     = file(params.targetSequences)
         allSequences            = Channel.fromPath(params.targetSequences)
-        
-        //allSequences.view()
+        allSequences.view()
+
         seqsFiltered = allSequences
                 .splitFasta( record: [header: true,  sequence: true ])
                 .map { record -> [header: record.header.replaceAll("[^a-zA-Z0-9]", "_"),
@@ -152,9 +145,12 @@ workflow {
             item -> '>' + item.header + '\n' + item.sequence + '\n'
         }
     }else if (params.preprocessing == 'proteome'){
-       allSequences            = Channel.fromPath(params.targetSequences) //should be folder here!
         
-        //allSequences.view()
+        allSequences  = Channel.fromPath("$params.targetSequences/*.$params.seqFormat") 
+            
+        allSequences.view()
+        allSequences.count().view{'No. of sequence file :'+it}
+
         seqsFiltered = allSequences
                 .splitFasta( record: [header: true,  sequence: true ])
                 .map { record -> [header: record.header.replaceAll("[^a-zA-Z0-9]", "_"),
@@ -170,7 +166,7 @@ workflow {
         sequencesValid = sequencesSanitized.collectFile( newLine: true) {
                     item -> [ "${item.orthologID}_filtered.fasta", '>' + item.header + '\n' + item.sequence]
         }
-        sequencesValid.count().view()
+        
         sequencesRemoved = result.invalid.collectFile(newLine: true) {
                     item -> [ "${item.orthologID}_ignored.fasta", '>' + item.header + '\n' + item.sequence]
         }
@@ -235,7 +231,23 @@ workflow {
             multipleSequenceAlignment = takeMultipleSequenceAlignment.out.multipleSequenceAlignment
 
 
-            mapMSA(multipleSequenceAlignment,params.nucToMap)
+
+            if (params.preprocessing == 'proteome') {
+                nucCh= Channel.fromPath("$params.nucToMap/*").map(it -> tuple(it.baseName[params.orthologIDLen] , it))
+            }else {nucCh= Channel.fromPath("$params.nucToMap")}
+
+            msaM=multipleSequenceAlignment.map(it -> tuple(it.baseName[params.orthologIDLen] , it))
+
+            msaM.join(nucCh, remainder:true)
+            .branch {
+                aliNotFound:        it[1] == null
+                nucNotFound:       it[2] == null
+                mapped:             true
+                }.set{mapNucMsa}
+                
+            mapNucMsa.mapped | mapMSA
+        
+            
             multipleSequenceAlignmentNuc=mapMSA.out.msaNuc
             /*if (params.preprocessing == 'protein'){
 
@@ -333,6 +345,10 @@ workflow {
         plottedBiophysicalFeaturesInPNG = Channel.empty()
     }
 
+
+    findRoot(phylogeneticTree, params.outGroup)
+    rootedTree = findRoot.out.rootedTree
+
     if (params.cladePlots){ 
         if (params.groupInfo){
             //this needs testing
@@ -348,7 +364,7 @@ workflow {
 
         }
         else{
-            treeToClade(phylogeneticTree)
+            treeToClade(rootedTree)
             cladeTab = treeToClade.out.cladeTab
 
 
@@ -380,8 +396,6 @@ workflow {
 
 
     if (params.csubst) {
-        findRoot(phylogeneticTree, params.outGroup)
-        rootedTree = findRoot.out.rootedTree
 
         mapAli = multipleSequenceAlignmentNuc.map(it -> tuple(it.baseName[params.orthologIDLen], it))
         mapTree = rootedTree.map(it -> tuple(it.baseName[params.orthologIDLen] , it))
@@ -413,15 +427,12 @@ workflow {
         }
 
     } else{
-        rootedTree = Channel.empty()
         csubstOut = Channel.empty()
     }
 
 
     if (params.eteEvol) {
         if (params.csubst == false){
-            findRoot(phylogeneticTree, params.outGroup )
-            rootedTree = findRoot.out.rootedTree
 
             mapTree = rootedTree.map(it -> tuple(it.baseName[params.orthologIDLen] , it))
 
@@ -440,7 +451,6 @@ workflow {
         eteOutZip = runEteEvol.out.eteOut.toList()
 
     } else{
-        rootedTree = Channel.empty()
         eteOutZip = Channel.empty()
     }
 

@@ -1,8 +1,7 @@
 
 process plotBiophysicalFeaturesOverview {
-    
-    publishDir "$params.outFolder/${msa.baseName.substring(0, 11)}/plots/b2b", mode: "copy"
 
+    publishDir "$params.outFolder/${msa.baseName.substring(0, 11)}/plots/b2b", mode: "copy"
     tag "${msa.name}"
     debug true
     
@@ -29,13 +28,9 @@ process plotBiophysicalFeaturesOverview {
 
 process plotPhylogeneticTree {
 
-
     publishDir "$params.outFolder/${tree.baseName.substring(0, 11)}/plots/", mode: "copy"
     tag "${tree.name}"
     debug true
-
-    // /home/sophie/miniconda3/envs/ete/bin/python
-    //conda '/Users/sophie/miniconda3/envs/ete3'
 
     input:
     path tree
@@ -68,6 +63,7 @@ process plotEvoVsPhys {
     publishDir "$params.outFolder/${b2bjson.baseName.substring(0, 11)}/plots/evo_v_b2b", mode: "copy"
     errorStrategy 'ignore'
     debug true
+
     input:
     path etetar
     path branchtar
@@ -77,10 +73,8 @@ process plotEvoVsPhys {
     path "*.csv"
     path "*.png"
 
-
     script:
     """
-
     for file in *.tar.gz; do
         tar -xvzf \$file
     done
@@ -93,6 +87,7 @@ process plotEvoVsPhys {
 process cladePlots {
 
     publishDir "$params.outFolder/${b2bjson.baseName.substring(0, 11)}/plots/clade_plots", mode: "copy"
+    tag "${oid}"
     
     input:
     tuple val(oid), path(b2bjson), path(cladeTab), path(envInfoFile)
@@ -103,12 +98,7 @@ process cladePlots {
     path '*pca.tsv' , emit: b2bPerTool
 
     script:
-
     """
     python3 $projectDir/bin/newB2BtoolsPlot.py "$b2bjson" "${params.b2bfigwidth}" "${params.b2boccupancy}" $cladeTab $envInfoFile
     """
-
-
-
-
 }

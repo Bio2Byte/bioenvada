@@ -61,8 +61,14 @@ for i in range(dfmin+1,dfmax,stepsize):#range(dfmin,dfmax,20): ##dfmin: ValueErr
     clusterlist=list(set(df['clusters'].to_list()))
     print(i, clusterlist)
 
+    if 5 in clusterlist:
+        clust5hres=i
+
     if 4 in clusterlist:
         clust4hres=i
+    
+    if 3 in clusterlist:
+        clust3hres=i
     
     if len(clusterlist) > 1:
         sil=silhouette_score(a,df.clusters )
@@ -73,49 +79,59 @@ for i in range(dfmin+1,dfmax,stepsize):#range(dfmin,dfmax,20): ##dfmin: ValueErr
         print('only 2 cluster before', i)
         break
 
-
-#print (coeffs)
+print (coeffs)
 
 #get max score
+
+print("max threshold for 3 clusters:",clust3hres)
+print("max threshold for 4 clusters:",clust4hres)
+print("max threshold for 5 clusters:",clust5hres)
+
 ideal_split_c=max(list(coeffs.values()))
-print(ideal_split_c)
-print(coeffs)
+print("global max thres: ",ideal_split_c)
+sil=[k for k, v in coeffs.items() if v == ideal_split_c]
+print(sil)
+ideal_split=sil[-1]
 
-
-ideal_split=list(coeffs.keys())[list(coeffs.values()).index(ideal_split_c)]
-print("Ideal treshold: ", ideal_split)
-
-
-localmax=[]
+localmax_split=''
 scores=list(coeffs.values())
 for i in range(stepsize,len(scores)-stepsize):
     coef=scores[i]
     if coef >  scores[i-stepsize] and coef > scores[i+stepsize]:
-        localmax.append(list(coeffs.keys())[i])
         localmax_split=list(coeffs.keys())[i]
-print(localmax)
+print('local max sil:', localmax_split)
+#sil=[k for k, v in coeffs.items() if v == t]
+
+thresholds=[clust3hres ,clust4hres,clust5hres]
+chosenSil=0
+for t in thresholds:
+    s=coeffs[t]
+    print(s)
+    if s >= chosenSil:
+        chosenThres = t
+        chosenSil = s
+print('clusters_set_clades', chosenThres,chosenSil)
 
 
 
-print("max threshold for 4 clusters:",clust4hres)
-
-
-df['clusters_globalMax']=fcluster(Z, ideal_split, criterion='distance')
-df['clusters_globalMax'] = 'clade_'+df['clusters_globalMax'].astype(str)
-
-df['clusters_4clades']=fcluster(Z, clust4hres, criterion='distance')
-df['clusters_4clades'] = 'clade_'+df['clusters_4clades'].astype(str)
+gmax='c_globalMax_thres'+str(ideal_split)
+df[gmax]=fcluster(Z, ideal_split, criterion='distance')
+df[gmax] = 'clade_'+df[gmax].astype(str)
 
 try:
-    df['clusters_localMax']=fcluster(Z, localmax_split, criterion='distance')
-    df['clusters_localMax'] = 'clade_'+df['clusters_localMax'].astype(str)
+    lmax='c_localMax_thres'+str(localmax_split)
+    df[lmax]=fcluster(Z, localmax_split, criterion='distance')
+    df[lmax] = 'clade_'+df[lmax].astype(str)
 except:
     print("No local maxima found")
+
+df["clusters_set_clades"]=fcluster(Z, chosenThres, criterion='distance')
+df['clusters_set_clades'] = 'clade_'+df['clusters_set_clades'].astype(str)
 
 #df['clusters_max4_cl']=fcluster(Z, 4, criterion='maxclust')
 
 
-outname=inputname+'_dist_thr_'+str(ideal_split)+'.csv'
+outname=inputname+'_dist_thr_'+str(chosenThres)+'.csv'
 df.to_csv(outname, sep='\t')
 
 
@@ -125,52 +141,3 @@ plt.ylabel('Silhouette score')
 
 plt.savefig(inputname+"_dist_thres.pdf")
 
-
-
-"""
-clusteroptions=['clusters_4clades','clusters_localMax','clusters_globalMax']
-
-
-colors=['LightCoral','LightGrey','PeachPuff','LightCyan','AntiqueWhite','LightSalmon','Khaki','PaleVioletRed','Lavender','PaleGreen','Beige','PowderBlue']
-
-for option in clusteroptions:
-    clade_df=df.filter(items=['index',option])
-    cladel=clade_df.groupby(by=option)['index'].apply(list)
-    claded=cladel.to_dict()
-
-    colmap={}
-    for i in range(len(claded.keys())):
-        clade=list(claded.keys())[i]
-        if i >= len(colors):
-            if i == len(colors):
-                x=0
-            else:
-                x=x+1
-        elif i ==0:
-            x=len(colors)-1
-        else:
-            x=i
-        colmap[clade]=colors[x]
-
-    #print(colmap)
-
-    nt=t
-    for i in range(len(claded.keys())):
-
-        clade=list(claded.keys())[i]
-
-        leaves=list(claded.values())[i]
-
-        
-
-        print(clade,colmap[clade])
-        nst = NodeStyle()
-        nst["bgcolor"] = colmap[clade]
-        n = nt.common_ancestor(leaves)
-        n.set_style(nst)
-
-    ts = TreeStyle()
-    ts.mode = "c"
-    nt.show(tree_style=ts)
-
-"""

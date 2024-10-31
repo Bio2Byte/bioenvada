@@ -110,5 +110,5 @@ out_name = msa[: -file_extension]+'_checked.' + msa.split('.')[-1]
 with open (out_name, 'w') as m:
     for row in rows:
         row = row.replace('\\n','\n').replace(' ','')
-        m.write( row + '\n')
+        m.write( row + '-\n')  #trailing gap to allow b2btools
         print (row)
